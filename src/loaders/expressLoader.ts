@@ -31,7 +31,6 @@ export const expressLoader: MicroframeworkLoader = (settings: MicroframeworkSett
             const api_key = req.headers['api_key'];
             console.log(`${req.method} ${req.originalUrl} ${req.connection.remoteAddress} api_key: ${api_key} [STARTED]`);
             const start = process.hrtime();
-
             res.on('finish', () => {
                 const durationInMilliseconds = getDurationInMilliseconds (start);
 
@@ -39,10 +38,10 @@ export const expressLoader: MicroframeworkLoader = (settings: MicroframeworkSett
                 if (durationInMilliseconds > 5000) {
                     try {
                         if (req.body && req.body !== '') {
-                            console.log(`Long running finish: ${JSON.stringify(req.body)}`);
+                            console.log(`long running finished: ${JSON.stringify(req.body)}`);
                         }
                     } catch (ex) {
-                        console.log('.', ex);
+                        console.log('stringify failure: ', ex);
                     }
                 }
                 try {
@@ -50,7 +49,7 @@ export const expressLoader: MicroframeworkLoader = (settings: MicroframeworkSett
                         console.log(`BODYPARAMS: ${JSON.stringify(req.body)}`);
                     }
                 } catch (ex) {
-                    console.log('excp in expreess middle ware', ex);
+                    console.log('ex', ex);
                 }
             });
 
@@ -76,7 +75,7 @@ export const expressLoader: MicroframeworkLoader = (settings: MicroframeworkSett
         expressApp.use(responseSize((req, res, size) => {
             const stat = `${req.method} - ${req.url.replace(/[:.]/g, '')}`;
             // Log only larger than 1MB
-            if (size < 1000000) {
+            if (size < 500000) {
                 return;
             }
             const convertedSize = Math.round(size / 1024);
@@ -95,16 +94,15 @@ export const expressLoader: MicroframeworkLoader = (settings: MicroframeworkSett
         expressApp.use(pretty({ always: true }));
 
         expressApp.use(cookieSession({
-            name: 'boostapisession',
-            keys: ['ac2b5dc962cad8eb2fdc0c2eebfdea1e91cffc838138c2116bc5d4b6250f9c39b8776dbdca2e638b556b738bce25dad21ed327f988539e9726142734961c5e0c'],
-            secret: 'ac2b5dc962cad8eb2fdc0c2eeb1dea1e91cffc831838c2116bc5d2b6250f9c39b8776dbdca2e638b556b738bce35ead21ed327f988539e9726142734961c5e0c',
+            name: 'boostpownodesession',
+            keys: ['super-secret-key-for-cookie-session-dkkfhjwiiu23iuoio42io3u2poi'],
+            secret: 'super-secret-key-for-cookie-session-dkkfhjwiiu23iuoio42io3u2poi',
             // Cookie Options
             maxAge: 24 * 60 * 60 * 1000 * 365 // 1 year
         }))
 
-
         useExpressServer(expressApp, { // register created express server in routing-controllers
-            cors: false,
+            cors: true,
             classTransformer: true,
             routePrefix: env.app.routePrefix,
             defaultErrorHandler: false,

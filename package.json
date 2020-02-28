@@ -1,7 +1,7 @@
 {
-  "name": "boost-api",
+  "name": "boostpow-api",
   "version": "1.0.0",
-  "description": "Boost API Service",
+  "description": "Boost POW API Service",
   "main": "src/app.ts",
   "scripts": {
     "start": "nps",
@@ -15,26 +15,26 @@
   },
   "repository": "git+ssh://git@github.com/w3tec/express-typescript-boilerplate.git",
   "keywords": [
-    "NodeJS",
-    "TypeScript",
-    "express"
+    "bitcoin",
+    "bitcoinsv",
+    "bsv",
+    "boost-protocol",
+    "boost-pow",
+    "proof-of-work",
+    "pow",
+    "satoshi-vision"
   ],
-  "homepage": "https://github.com/w3tec/express-typescript-boilerplate#readme",
+  "homepage": "https://github.com/MatterPool/boostpow-api",
   "author": "w3tec.ch <info@w3tec.ch>",
   "contributors": [
     {
-      "name": "David Weber",
-      "email": "david.weber@w3tec.ch",
-      "url": "https://github.com/dweber019"
-    },
-    {
-      "name": "Gery Hirschfeld",
-      "email": "gery.hirschfeld@w3tec.ch",
-      "url": "https://github.com/hirsch88"
+      "name": "Attila",
+      "email": "attila@matterpool.io"
     }
   ],
   "dependencies": {
     "bcrypt": "3.0.1",
+    "boostpow-js": "^1.2.15",
     "bs58": "^4.0.1",
     "bsv": "^1.2.0",
     "chalk": "^2.4.1",
@@ -60,7 +60,7 @@
     "graphql": "14.0.2",
     "helmet": "^3.9.0",
     "jsonfile": "5.0.0",
-    "mattercloudjs": "^1.0.6",
+    "mattercloudjs": "^1.0.13",
     "microframework-w3tec": "^0.6.3",
     "moment": "^2.24.0",
     "momentjs": "^2.0.0",
