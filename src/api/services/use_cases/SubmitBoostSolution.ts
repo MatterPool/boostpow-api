@@ -10,6 +10,8 @@ import * as boost from 'boostpow-js';
 import * as bsv from 'bsv';
 import * as matter from 'mattercloudjs';
 import { ServiceError } from '../errors/ServiceError';
+import { GetUnredeemedBoostJobUtxos } from './GetUnredeemedBoostJobUtxos';
+import { BoostBlockchainMonitor } from '../../../api/models/boost-blockchain-monitor';
 
 @Service()
 export class SubmitBoostSolution implements UseCase {
@@ -17,6 +19,7 @@ export class SubmitBoostSolution implements UseCase {
     constructor(
         @OrmRepository() private boostJobRepo: BoostJobRepository,
         @Service() private getBoostJob: GetBoostJob,
+        @Service() private getUnredeemedBoostJobUtxos: GetUnredeemedBoostJobUtxos,
     ) {
     }
 
@@ -42,6 +45,12 @@ export class SubmitBoostSolution implements UseCase {
             await this.boostJobRepo.save(boostJobEntity);
         }
         return await this.getBoostJob.run({txid: boostJobTxId});
+    }
+
+    public async runWithRawTx(params: { rawtx: string }) {
+        const boostJobProof = boost.BoostPowJob.fromRawTransaction(params.rawtx);
+        console.log('boostJobProof', boostJobProof);
+        return true;
     }
 
     public async run(params: {txid: string, vout: number, nonce: number, extraNonce1: number, extraNonce2: string, time: number}): Promise<any> {
@@ -92,6 +101,12 @@ export class SubmitBoostSolution implements UseCase {
             if (!sentStatus.txid) {
                 throw new ServiceError(500, 'unable to publish' + sentStatus);
             }
+            this.getUnredeemedBoostJobUtxos.run().then(async (txoOutputs) => {
+                const monitor = await BoostBlockchainMonitor.instance();
+                monitor.updateFilters(txoOutputs);
+            }).catch((err) => {
+                console.log(err);
+            });
             return savedResult;
         } catch (ex) {
             if (ex && ex.message && ex.message.message && (/txn\-already\-known/.test(ex.message.message)) || /Transaction already in the mempool/.test(ex.message.message) ) {

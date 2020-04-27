@@ -10,11 +10,15 @@ import { OrmRepository } from 'typeorm-typedi-extensions';
 import { BoostJob } from '../../models/BoostJob';
 import * as bsv from 'bsv';
 import { BoostJobStatus } from '../../models/boost-job-status';
+import { BoostBlockchainMonitor } from '../../models/boost-blockchain-monitor';
+import { GetUnredeemedBoostJobUtxos } from './GetUnredeemedBoostJobUtxos';
+
 @Service()
 export class SubmitBoostJob implements UseCase {
 
     constructor(
-        @OrmRepository() private boostJobRepo: BoostJobRepository
+        @OrmRepository() private boostJobRepo: BoostJobRepository,
+        @Service() private getUnredeemedBoostJobUtxos: GetUnredeemedBoostJobUtxos,
     ) {
     }
 
@@ -40,6 +44,7 @@ export class SubmitBoostJob implements UseCase {
         }
     }
     public async run(params: {rawtx: string}): Promise<any> {
+        console.log('saving boost job', params);
         if (
             this.isEmpty(params.rawtx)
         ) {
@@ -50,7 +55,6 @@ export class SubmitBoostJob implements UseCase {
             txid: boostJob.getTxid(),
             vout: boostJob.getVout(),
         });
-
         if (!boostJobEntity) {
             const newBoostJob = new BoostJob();
             newBoostJob.inserted_at = Math.round((new Date().getTime()) / 1000);
@@ -69,7 +73,18 @@ export class SubmitBoostJob implements UseCase {
             newBoostJob.additionaldata = boostJob.getAdditionalDataHex();
             newBoostJob.additionaldatautf8 = boostJob.getAdditionalDataString();
             newBoostJob.usernonce = boostJob.getUserNonceHex();
-            boostJobEntity = await this.boostJobRepo.save(newBoostJob);
+            try {
+                boostJobEntity = await this.boostJobRepo.save(newBoostJob);
+            } catch (ex) {
+                boostJobEntity = await this.boostJobRepo.findOne({
+                    txid: boostJob.getTxid(),
+                    vout: boostJob.getVout(),
+                });
+                // If it still does not exist, then throw
+                if (!boostJobEntity) {
+                    throw new Error(ex);
+                }
+            }
         }
         if (!boostJobEntity.powstring || !boostJobEntity.powmetadata || !boostJobEntity.boosthash) {
             // Check to see if the script hash is spent
@@ -94,7 +109,13 @@ export class SubmitBoostJob implements UseCase {
                 }
             }
         }
-
+        // New entity saved, update the filter for the blockchain scanner
+        this.getUnredeemedBoostJobUtxos.run().then(async (txoOutputs) => {
+            const monitor = await BoostBlockchainMonitor.instance();
+            monitor.updateFilters(txoOutputs);
+        }).catch((err) => {
+            console.log(err);
+        });
         return {
             success: true,
             result: BoostJobStatus.validateAndSerialize(boostJobEntity, true)
