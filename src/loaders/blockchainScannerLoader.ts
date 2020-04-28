@@ -5,6 +5,7 @@ import { BoostBlockchainMonitor } from '../api/models/boost-blockchain-monitor';
 export const blockchainScannerLoader: MicroframeworkLoader = async (settings: MicroframeworkSettings | undefined) => {
     if (settings) {
         const monitor = BoostBlockchainMonitor.instance();
-        settings.setData('boostMonitor', monitor);
+        console.log('Starting blockchain monitor...', monitor);
+        settings.setData('blockchainMonitor', monitor);
     }
 };

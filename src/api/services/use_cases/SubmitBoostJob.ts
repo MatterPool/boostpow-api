@@ -44,7 +44,6 @@ export class SubmitBoostJob implements UseCase {
         }
     }
     public async run(params: {rawtx: string}): Promise<any> {
-        console.log('saving boost job', params);
         if (
             this.isEmpty(params.rawtx)
         ) {
