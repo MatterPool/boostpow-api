@@ -66,6 +66,7 @@ export class BoostBlockchainMonitor {
             const submitBoostJobProof = Container.get(SubmitBoostJobProof);
             const boostJobProof = boost.BoostPowJobProof.fromRawTransaction(rawtx);
             if (boostJobProof) {
+                console.log('Found BoostJobProof', boostJobProof);
                 await submitBoostJobProof.run({ rawtx: rawtx})
             }
             return;
@@ -86,6 +87,7 @@ export class BoostBlockchainMonitor {
         try {
             const boostJob = boost.BoostPowJob.fromRawTransaction(e.raw);
             if (boostJob) {
+                console.log('Found BoostJob', boostJob);
                 const submitBoostJob = Container.get(SubmitBoostJob);
                 await submitBoostJob.run({ rawtx: e.raw})
             }
@@ -112,7 +114,6 @@ export class BoostBlockchainMonitor {
             BoostBlockchainMonitor.processTransaction(e);
         })
         .block(async (block, self) => {
-
             for (const e of block.tx) {
                 BoostBlockchainMonitor.processTransaction(e);
             }

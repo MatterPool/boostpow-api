@@ -1,5 +1,6 @@
 # @w3tec
 
+./deploy.sh
 deploy.sh
 # Logs #
 /logs
