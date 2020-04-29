@@ -1939,10 +1939,10 @@ bitcoincashjs@^0.1.10:
   resolved "https://registry.yarnpkg.com/bitcoincashjs/-/bitcoincashjs-0.1.14.tgz#9da1efb762e05d608b6e04fadf1277eaa2201b48"
   integrity sha512-x0wMVSCZ56ZQnSQ+Xim7XfS0IYiOyOwo0pdMCmR+cDNB7zRhICFuH5i3lNdLSgUw1e7Pc3FmUlC9wruQNlYMnA==
 
-bitcoinfiles-sdk@^2.1.1:
-  version "2.1.1"
-  resolved "https://registry.yarnpkg.com/bitcoinfiles-sdk/-/bitcoinfiles-sdk-2.1.1.tgz#6e07ce982832d20268682d1a25397a2076bef2fa"
-  integrity sha512-yRlDrgu6cABIk3xuU3AEFja+SdPCbuQ/lEuJWYI/MccYZxJWZ5PnMJs2/nF3Q3mldsDg5kSJGjXMvPpftXG24Q==
+bitcoinfiles-sdk@^2.1.4:
+  version "2.1.4"
+  resolved "https://registry.yarnpkg.com/bitcoinfiles-sdk/-/bitcoinfiles-sdk-2.1.4.tgz#f3481ed4980968cc48f3fe37b1551a525c88543e"
+  integrity sha512-IO7Cw5Sb954JzJrnXPHb20cc+rUbXXM4BJS/s/V/Ip0mzQQXP1CT9WNfMR4SL3zf/X+nSucAwTygQAmaJNLcAA==
   dependencies:
     axios "^0.18.0"
     base-58 "0.0.1"

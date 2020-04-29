@@ -13,6 +13,7 @@ export class BoostBlockchainMonitor {
         this.blockchainScanner = bitcoinfiles.scanner({
             initHeight: initHeight ? initHeight : 632392, // Just a default starting point
             saveUpdatedHeight: true,
+            debug: true,
         });
     }
 
@@ -21,6 +22,34 @@ export class BoostBlockchainMonitor {
             BoostBlockchainMonitor.instance_ = BoostBlockchainMonitor.createInstance();
         }
         return BoostBlockchainMonitor.instance_;
+    }
+
+    private static async createInstance() {
+        const monitor = new BoostBlockchainMonitor();
+        monitor.setup();
+        return monitor;
+    }
+
+    private async setup() {
+        // Set up the initial boost job utxos to monitor
+        const getUnredeemedBoostJobUtxos = Container.get(GetUnredeemedBoostJobUtxos);
+        const unredeemedOutputs = await getUnredeemedBoostJobUtxos.run();
+        await this.updateFilters(unredeemedOutputs);
+
+        // Subscribe listeners
+        this.blockchainScanner.mempool(async (e, self) => {
+            console.log('mempool here', e);
+            BoostBlockchainMonitor.processTransaction(e);
+        })
+        .block(async (block, self) => {
+            for (const e of block.tx) {
+                BoostBlockchainMonitor.processTransaction(e);
+            }
+        })
+        .error((err, self) => {
+            console.log('error', err.toString(), self);
+        })
+        .start();
     }
 
     /**
@@ -49,9 +78,9 @@ export class BoostBlockchainMonitor {
         return false;
     }
 
-    private static isBoostSolution(raw) {
+    private static isBoostSolution(rawtx) {
         try {
-            const boostJobProof = boost.BoostPowJobProof.fromRawTransaction(raw);
+            const boostJobProof = boost.BoostPowJobProof.fromRawTransaction(rawtx);
             if (boostJobProof) {
                 return true;
             }
@@ -68,7 +97,9 @@ export class BoostBlockchainMonitor {
             if (boostJobProof) {
                 console.log('Found BoostJobProof', boostJobProof);
                 await submitBoostJobProof.run({ rawtx: rawtx})
+                return;
             }
+            console.log('saveBoostSolution null', rawtx);
             return;
         } catch (ex) {
             console.log(ex)
@@ -76,51 +107,29 @@ export class BoostBlockchainMonitor {
     }
 
     private static async processTransaction(e: { h: string, raw: string }) {
+        console.log('processTransaction', e.h);
         if (BoostBlockchainMonitor.isBoostJob(e.raw)) {
+            console.log('processTransaction boostJob', e.h);
             BoostBlockchainMonitor.saveBoostJob(e.raw);
         } else if (BoostBlockchainMonitor.isBoostSolution(e.raw)) {
+            console.log('processTransaction boostJobProof', e.h);
             BoostBlockchainMonitor.saveBoostSolution(e.raw);
         }
     }
 
-    private static async saveBoostJob(e) {
+    private static async saveBoostJob(rawtx) {
         try {
-            const boostJob = boost.BoostPowJob.fromRawTransaction(e.raw);
+            const boostJob = boost.BoostPowJob.fromRawTransaction(rawtx);
             if (boostJob) {
                 console.log('Found BoostJob', boostJob);
                 const submitBoostJob = Container.get(SubmitBoostJob);
-                await submitBoostJob.run({ rawtx: e.raw})
+                await submitBoostJob.run({ rawtx: rawtx})
+                return;
             }
+            console.log('saveBoostJob null', rawtx);
             return;
         } catch (ex) {
             console.log(ex)
         }
-    }
-
-    private static async createInstance() {
-        const monitor = new BoostBlockchainMonitor();
-        monitor.setup();
-        return monitor;
-    }
-
-    private async setup() {
-        // Set up the initial boost job utxos to monitor
-        const getUnredeemedBoostJobUtxos = Container.get(GetUnredeemedBoostJobUtxos);
-        const unredeemedOutputs = await getUnredeemedBoostJobUtxos.run();
-        await this.updateFilters(unredeemedOutputs);
-
-        // Subscribe listeners
-        this.blockchainScanner.mempool(async (e, self) => {
-            BoostBlockchainMonitor.processTransaction(e);
-        })
-        .block(async (block, self) => {
-            for (const e of block.tx) {
-                BoostBlockchainMonitor.processTransaction(e);
-            }
-        })
-        .error((err, self) => {
-            console.log('error', err.toString(), self);
-        })
-        .start();
     }
 }

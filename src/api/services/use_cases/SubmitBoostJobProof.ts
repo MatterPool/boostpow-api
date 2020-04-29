@@ -37,12 +37,14 @@ export class SubmitBoostJobProof implements UseCase {
     }
 
     public async run(params: {rawtx: string}): Promise<any> {
+        console.log('SubmitBoostJobProof', params);
         const boostJobProof = boost.BoostPowJobProof.fromRawTransaction(params.rawtx);
 
         if (!boostJobProof) {
             console.log('BoostJobProof could not be created', params.rawtx);
             return;
         }
+        console.log('SubmitBoostJob', boostJobProof);
 
         const tx = new bsv.Transaction(params.rawtx);
 
@@ -58,7 +60,9 @@ export class SubmitBoostJobProof implements UseCase {
             console.log('Not found matching job', params.rawtx);
             return;
         }
+        console.log('Saving BoostJobProof', matchingJob, boostJobProof);
         await this.saveSpentInfo(matchingJob, boostJobProof, params.rawtx);
+        console.log('Saved BoostJobProof', matchingJob, boostJobProof);
         this.getUnredeemedBoostJobUtxos.run().then(async (txoOutputs) => {
             const monitor = await BoostBlockchainMonitor.instance();
             monitor.updateFilters(txoOutputs);

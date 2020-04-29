@@ -54,6 +54,7 @@ export class SubmitBoostSolution implements UseCase {
     }
 
     public async run(params: {txid: string, vout: number, nonce: number, extraNonce1: number, extraNonce2: string, time: number}): Promise<any> {
+        console.log('SubmitBoostSolution', params);
         if (
             !params.txid ||
             !params.extraNonce2

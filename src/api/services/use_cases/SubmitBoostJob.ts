@@ -44,17 +44,20 @@ export class SubmitBoostJob implements UseCase {
         }
     }
     public async run(params: {rawtx: string}): Promise<any> {
+        console.log('SubmitBoostJob', params);
         if (
             this.isEmpty(params.rawtx)
         ) {
             throw new ClientError(422, 'required fields: rawtx');
         }
         const boostJob = boost.BoostPowJob.fromRawTransaction(params.rawtx);
+        console.log('SubmitBoostJob', boostJob);
         let boostJobEntity = await this.boostJobRepo.findOne({
             txid: boostJob.getTxid(),
             vout: boostJob.getVout(),
         });
         if (!boostJobEntity) {
+
             const newBoostJob = new BoostJob();
             newBoostJob.inserted_at = Math.round((new Date().getTime()) / 1000);
             newBoostJob.txid = boostJob.getTxid();
@@ -73,7 +76,9 @@ export class SubmitBoostJob implements UseCase {
             newBoostJob.additionaldatautf8 = boostJob.getAdditionalDataString();
             newBoostJob.usernonce = boostJob.getUserNonceHex();
             try {
+                console.log('Saving...', newBoostJob);
                 boostJobEntity = await this.boostJobRepo.save(newBoostJob);
+                console.log('Saved.', newBoostJob);
             } catch (ex) {
                 boostJobEntity = await this.boostJobRepo.findOne({
                     txid: boostJob.getTxid(),
@@ -86,9 +91,11 @@ export class SubmitBoostJob implements UseCase {
             }
         }
         if (!boostJobEntity.powstring || !boostJobEntity.powmetadata || !boostJobEntity.boosthash) {
+            console.log('Checking pow...', boostJobEntity);
             // Check to see if the script hash is spent
             const history = await matter.instance().getScriptHashHistory(boostJobEntity.scripthash, {});
             for (const item of history.results) {
+                console.log('Checking item...', item);
                 const txraw = await matter.instance().getTxRaw(item.txid);
                 let boostProof;
                 try {
@@ -101,13 +108,16 @@ export class SubmitBoostJob implements UseCase {
                 if (boostProof && boostProof.getSpentTxid() === boostJobEntity.txid && boostProof.getSpentVout() === boostJobEntity.vout) {
                     const validation = boost.BoostPowJob.tryValidateJobProof(boostJob, boostProof);
                     if (!validation || !validation.boostPowString) {
+                        console.log('Unable to validate...', validation);
                         continue;
                     }
+                    console.log('Saving spent info', boostJobEntity, boostProof);
                     await this.saveSpentInfo(boostJobEntity, boostProof, validation.boostPowString.time(), txraw);
                     break;
                 }
             }
         }
+        console.log('Updating filter');
         // New entity saved, update the filter for the blockchain scanner
         this.getUnredeemedBoostJobUtxos.run().then(async (txoOutputs) => {
             const monitor = await BoostBlockchainMonitor.instance();
