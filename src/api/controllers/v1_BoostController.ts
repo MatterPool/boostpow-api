@@ -7,6 +7,7 @@ import { GetBoostJob } from '../services/use_cases/GetBoostJob';
 import { SubmitBoostSolution } from '../services/use_cases/SubmitBoostSolution';
 import { FindBoostResource } from '../services/use_cases/FindBoostResource';
 import { SearchBoostGraph } from '../services/use_cases/SearchBoostGraph';
+import { GetUnredeemedBoostJobList } from '../services/use_cases/GetUnredeemedBoostJobList';
 
 @JsonController()
 export class BoostController {
@@ -14,6 +15,7 @@ export class BoostController {
         private submitBoostJob: SubmitBoostJob,
         private submitBoostSolution: SubmitBoostSolution,
         private getBoostJobStatus: GetBoostJob,
+        private getBoostJobUnredeemedList: GetUnredeemedBoostJobList,
         private findBoostResource: FindBoostResource,
         private searchBoost: SearchBoostGraph
     ) {
@@ -93,6 +95,23 @@ export class BoostController {
             throw e;
         });
     }
+    /**
+     * Get unredeemed Boost Jobs
+     *
+     */
+    @Get('/v1/main/boost/jobs')
+    public async getUnredeemedJobs(
+        @QueryParam('limit') limit = 2000
+    ) {
+        return this.getBoostJobUnredeemedList.run({
+            limit: limit
+        }).then((outcome) => {
+            return outcome;
+        }).catch((e) => {
+            throw e;
+        });
+    }
+
     /**
      * Get boost job status
      *
