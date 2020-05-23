@@ -87,10 +87,6 @@ export class SubmitBoostSolution implements UseCase {
         index?: number}): Promise<any> {
         console.log('SubmitBoostSolution', params);
 
-        const i = SubmitBoostSolution.getKeyPairWithIndex(params.index || undefined);
-
-            console.log('i', i);
-
         if (
             !params.txid ||
             !params.extraNonce2

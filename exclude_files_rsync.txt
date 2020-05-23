@@ -9,3 +9,4 @@ dist/
 .env
 node_modules/
 yarn.lock
+.bitcoinfiles_scanner_.json
