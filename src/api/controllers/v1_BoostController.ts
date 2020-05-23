@@ -63,6 +63,7 @@ export class BoostController {
         @BodyParam('txid') txid: string,
         @BodyParam('vout') vout: number,
         @BodyParam('time') time: number,
+        @QueryParam('index') index?: number,
     ) {
         return this.submitBoostSolution.run({
             nonce,
@@ -70,13 +71,15 @@ export class BoostController {
             extraNonce2,
             txid,
             vout,
-            time
+            time,
+            index
         }).then((outcome) => {
             return outcome;
         }).catch((e) => {
             throw e;
         });
     }
+
     /**
      * You might have constructed a transaction that forms the completed solution.
      *

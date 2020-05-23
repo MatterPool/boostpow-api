@@ -13,6 +13,7 @@ import { ServiceError } from '../errors/ServiceError';
 import { GetUnredeemedBoostJobUtxos } from './GetUnredeemedBoostJobUtxos';
 import { BoostBlockchainMonitor } from '../../../api/models/boost-blockchain-monitor';
 
+
 @Service()
 export class SubmitBoostSolution implements UseCase {
 
@@ -30,7 +31,12 @@ export class SubmitBoostSolution implements UseCase {
         return false;
     }
 
-    public async saveSpentInfo(boostJobEntity: any, boostJobProof: any, time: number, boostJobTxId: bsv.Transaction, spentTx: bsv.Transaction) {
+    public async saveSpentInfo(
+        boostJobEntity: any,
+        boostJobProof: any,
+        time: number,
+        boostJobTxId: bsv.Transaction,
+        spentTx: bsv.Transaction) {
         const boostJob = boost.BoostPowJob.fromRawTransaction(boostJobEntity.rawtx);
         const powValidation = boost.BoostPowJob.tryValidateJobProof(boostJob, boostJobProof);
         // Now make sure it is saved to the db
@@ -53,8 +59,38 @@ export class SubmitBoostSolution implements UseCase {
         return true;
     }
 
-    public async run(params: {txid: string, vout: number, nonce: number, extraNonce1: number, extraNonce2: string, time: number}): Promise<any> {
+    private static getKeyPairWithIndex(index?: number): { pubKey: any, privKey: any} {
+        if (index === undefined || index === null)  {
+            const privKey = bsv.PrivateKey(process.env.MINER_PRIV_KEY);
+            const pubKey = privKey.toPublicKey();
+            return {
+                privKey: privKey,
+                pubKey: pubKey,
+            }
+        }
+        const hdPrivateKey = new bsv.HDPrivateKey(process.env.MINER_XPRV_KEY);
+        const derivePath = `m/44'/0'/0'/0/${index}`;  // non-hardened
+        const childPrivateKey = hdPrivateKey.deriveChild(derivePath);
+        return {
+            privKey: childPrivateKey.privateKey,
+            pubKey: childPrivateKey.publicKey,
+        }
+    }
+
+    public async run(params: {
+        txid: string,
+        vout: number,
+        nonce: number,
+        extraNonce1: number,
+        extraNonce2: string,
+        time: number,
+        index?: number}): Promise<any> {
         console.log('SubmitBoostSolution', params);
+
+        const i = SubmitBoostSolution.getKeyPairWithIndex(params.index || undefined);
+
+            console.log('i', i);
+
         if (
             !params.txid ||
             !params.extraNonce2
@@ -71,8 +107,11 @@ export class SubmitBoostSolution implements UseCase {
         });
         // Get the boost job
         const boostJob = boost.BoostPowJob.fromRawTransaction(boostJobEntity.rawtx);
-        const privKey = bsv.PrivateKey(process.env.MINER_PRIV_KEY);
-        const pubKey = privKey.toPublicKey();
+
+        const keyPair = SubmitBoostSolution.getKeyPairWithIndex(params.index || undefined);
+        const privKey = keyPair.privKey;
+        const pubKey = keyPair.pubKey;
+
         // Mess with the endianness to get it right.
         const time = Buffer.allocUnsafe(4);
         time.writeUInt32BE(params.time, 0);

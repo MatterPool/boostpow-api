@@ -26,7 +26,7 @@ export class GetUnredeemedBoostJobList implements UseCase {
      *
      * @param job Boost Job to serialize into a form that a stratum mining pool can use
      */
-    static serializeBoostJob(job: BoostJob): any {
+    public static serializeBoostJob(job: BoostJob): any {
         const privKey = bsv.PrivateKey.fromWIF(process.env.MINER_PRIV_KEY);
         try {
             const boostJobObj = boost.BoostPowJob.fromRawTransaction(job.rawtx);
