@@ -32,7 +32,7 @@ npm install
 yarn start build
 
 # Start service
-yarn start service
+yarn start serve
 
 ```
 
