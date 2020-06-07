@@ -43,3 +43,8 @@ NOTE: Configure `.env.example` to `.env` for production and to `.env.test` for t
 ```sh
 sudo yarn start db.migrate
 ```
+
+### More Documentation (Migrations, etc)
+
+Based off: https://github.com/w3tecch/express-typescript-boilerplate
+
