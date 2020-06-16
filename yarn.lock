@@ -262,9 +262,9 @@ acorn-walk@^6.0.1:
   integrity sha512-OtUw6JUTgxA2QoqqmrmQ7F2NYqiBPi/L2jqHyFtllhOUvXYQXf0Z1CYUinIfyT4bTCGmrA7gX9FvHA81uzCoVw==
 
 acorn@^5.5.3:
-  version "5.7.3"
-  resolved "https://registry.yarnpkg.com/acorn/-/acorn-5.7.3.tgz#67aa231bf8812974b85235a96771eb6bd07ea279"
-  integrity sha512-T/zvzYRfbVojPWahDsE5evJdHb3oJoQfFbsrKM7w5Zcs++Tr257tia3BmMP8XYVjp1S9RZXQMh7gao96BlqZOw==
+  version "5.7.4"
+  resolved "https://registry.yarnpkg.com/acorn/-/acorn-5.7.4.tgz#3e8d8a9947d0599a1796d10225d7432f4a4acf5e"
+  integrity sha512-1D++VG7BhrtvQpNbBzovKNc1FLGGEE/oGe7b9xJm/RFHMBeUaUGpluV9RLjZa47YFdPcDAenEYuq9pQPcMdLJg==
 
 acorn@^6.0.1:
   version "6.0.4"
@@ -773,10 +773,10 @@ binary-extensions@^1.0.0:
   resolved "https://registry.yarnpkg.com/binary-extensions/-/binary-extensions-1.12.0.tgz#c2d780f53d45bba8317a8902d4ceeaf3a6385b14"
   integrity sha512-DYWGk01lDcxeS/K9IHPGWfT8PsJmbXRtRd2Sx72Tnb8pcYZQFF1oSDb8hJtS1vhp212q1Rzi5dUf9+nq0o9UIg==
 
-bitcoinfiles-sdk@^2.4.9:
-  version "2.4.9"
-  resolved "https://registry.yarnpkg.com/bitcoinfiles-sdk/-/bitcoinfiles-sdk-2.4.9.tgz#cc601cd9e4c69d254e25faa7b101cb8850fe7aba"
-  integrity sha512-RwriMoVZkvDww4ca++/V2IIIViJQF0t0bZ0ae7tWXZGakd+0hjINDVE5YA/jkK+jpp2v9Bb9tUesmHoyJjRi0g==
+bitcoinfiles-sdk@^2.4.10:
+  version "2.4.10"
+  resolved "https://registry.yarnpkg.com/bitcoinfiles-sdk/-/bitcoinfiles-sdk-2.4.10.tgz#d30ca798ebe388c53edb1093d360385fee6fa26e"
+  integrity sha512-Y/x209qapM8ibtisLBcQQe4a9FPszoTSI3kk9KG1JM7+3Ipfu4xOXn0wdkHFArCk9oNB1LiQGumTWNIkaDF1xg==
   dependencies:
     axios "^0.18.0"
     base-58 "0.0.1"
