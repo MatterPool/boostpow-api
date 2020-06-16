@@ -13,7 +13,9 @@ import { ServiceError } from '../errors/ServiceError';
 import { GetUnredeemedBoostJobUtxos } from './GetUnredeemedBoostJobUtxos';
 import { BoostBlockchainMonitor } from '../../../api/models/boost-blockchain-monitor';
 
-
+const matterInstance = matter.instance({
+    api_key:  process.env.MATTERCLOUD_API_KEY
+});
 @Service()
 export class SubmitBoostSolution implements UseCase {
 
@@ -133,7 +135,7 @@ export class SubmitBoostSolution implements UseCase {
 
         try {
             const savedResult = await this.saveSpentInfo(boostJobEntity, boostJobProof, params.time, params.txid, tx);
-            const sentStatus = await matter.instance().sendRawTx(tx.toString());
+            const sentStatus = await matterInstance.sendRawTx(tx.toString());
             if (!sentStatus.txid) {
                 throw new ServiceError(500, 'unable to publish' + sentStatus);
             }
