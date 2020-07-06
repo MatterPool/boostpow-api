@@ -160,8 +160,8 @@ export class SearchBoostGraph implements UseCase {
         }
 
         if (!fieldsSpecified) {
-            // Default and limit to one week of data
-            const maxAllowedTime = (Math.round((new Date()).getTime() / 1000)) - (60 * 60 * 24 * 7);
+            // Default and limit data
+            const maxAllowedTime = (Math.round((new Date()).getTime() / 1000)) - (60 * 60 * 24 * 30);
             query = query.andWhere("boost_job.time >= :oldestAllowed", { oldestAllowed: maxAllowedTime});
             params.minedTimeFrom = maxAllowedTime;
         }
