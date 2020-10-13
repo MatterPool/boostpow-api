@@ -5,15 +5,12 @@ import { UseCase } from './UseCase';
 import { ClientError } from '../errors/ClientError';
 import { BoostJobRepository } from '../../repositories/BoostJobRepository';
 import { OrmRepository } from 'typeorm-typedi-extensions';
-import * as matter from 'mattercloudjs';
-import { SubmitBoostJob } from './SubmitBoostJob';
 
 @Service()
 export class GetBoostJob implements UseCase {
 
     constructor(
-        @OrmRepository() private boostJobRepo: BoostJobRepository,
-        @Service() private submitBoostJob: SubmitBoostJob
+        @OrmRepository() private boostJobRepo: BoostJobRepository
     ) {
     }
 
@@ -34,9 +31,9 @@ export class GetBoostJob implements UseCase {
             txid: params.txid,
             vout: params.vout ? params.vout : 0,
         });
-        let rawtx;
-        console.log('getBoostJob run entity', boostJobEntity);
-        if (!boostJobEntity) {
+       // let rawtx;
+       // console.log('getBoostJob run entity', boostJobEntity);
+       /* if (!boostJobEntity) {
             // Then try to look it up on the blockchain
             try {
                 const r = await matter.instance().getTxRaw(params.txid);
@@ -48,8 +45,8 @@ export class GetBoostJob implements UseCase {
             }
         } else {
             rawtx = boostJobEntity.rawtx;
-        }
-        console.log('About to submitBoostJob', rawtx);
-        return this.submitBoostJob.run({rawtx: rawtx});
+        }*/
+        // console.log('About to submitBoostJob', rawtx);
+        return boostJobEntity; // this.submitBoostJob.run({rawtx: rawtx});
     }
 }
