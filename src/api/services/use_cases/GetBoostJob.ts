@@ -29,15 +29,19 @@ export class GetBoostJob implements UseCase {
         ) {
             throw new ClientError(422, 'required fields: txid');
         }
+        console.log('getBoostJob run', params);
         const boostJobEntity = await this.boostJobRepo.findOne({
             txid: params.txid,
             vout: params.vout ? params.vout : 0,
         });
         let rawtx;
+        console.log('getBoostJob run entity', boostJobEntity);
         if (!boostJobEntity) {
             // Then try to look it up on the blockchain
             try {
-                rawtx = await matter.instance().getTxRaw(params.txid);
+                const r = await matter.instance().getTxRaw(params.txid);
+                console.log('Fetched rawtx r', r);
+                rawtx = r.raw;
             } catch (err) {
                 console.log('getBoostJob error', err);
                 throw err;
@@ -45,6 +49,7 @@ export class GetBoostJob implements UseCase {
         } else {
             rawtx = boostJobEntity.rawtx;
         }
+        console.log('About to submitBoostJob', rawtx);
         return this.submitBoostJob.run({rawtx: rawtx});
     }
 }

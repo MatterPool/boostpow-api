@@ -87,29 +87,33 @@ export class SubmitBoostSolution implements UseCase {
         extraNonce2: string,
         time: number,
         index?: number}): Promise<any> {
-        console.log('SubmitBoostSolution', params);
-
+        console.log('SubmitBoostSolutionUpdated', params);
+        console.log('SubmitBoostSolutionUpdated2', params);
         if (
             !params.txid ||
             !params.extraNonce2
         ) {
             throw new ClientError(422, 'required fields: txid, vout, nonce, extraNonce1, extraNonce2, time');
         }
-        const jobStatus = await this.getBoostJob.run({txid: params.txid});
+        console.log('this.getBoostJob.run({txid: params.txid});', params.txid);
+        const jobStatus = await this.getBoostJob.run({txid: params.txid, vout: params.vout});
+        console.log('this.getBoostJob.run({txid: params.txid}); returns', jobStatus);
         if (!jobStatus) {
             throw new ClientError(404, 'not found fix this');
         }
+        console.log('boostJobEntity finding...');
         const boostJobEntity = await this.boostJobRepo.findOne({
             txid: params.txid,
             vout: params.vout,
         });
         // Get the boost job
+        console.log('boostJobEntity', boostJobEntity);
         const boostJob = boost.BoostPowJob.fromRawTransaction(boostJobEntity.rawtx);
 
         const keyPair = SubmitBoostSolution.getKeyPairWithIndex(params.index || undefined);
         const privKey = keyPair.privKey;
         const pubKey = keyPair.pubKey;
-
+        console.log('boostJobEntity got key....');
         // Mess with the endianness to get it right.
         const time = Buffer.allocUnsafe(4);
         time.writeUInt32BE(params.time, 0);
@@ -126,16 +130,19 @@ export class SubmitBoostSolution implements UseCase {
             nonce: nonce.toString('hex'),
             minerPubKeyHash: pubKey._getID().toString('hex'),
         });
+        console.log('About to validate...');
         const validation = boost.BoostPowJob.tryValidateJobProof(boostJob, boostJobProof);
 
         if (!validation || !validation.boostPowString || !validation.boostPowMetadata) {
             throw new ClientError(422, 'invalid boost solution');
         }
+        console.log('About to create redeem...');
         const tx = boost.BoostPowJob.createRedeemTransaction(boostJob, boostJobProof, privKey.toString(), process.env.MINER_RECEIVE_ADDRESS);
 
         try {
             const savedResult = await this.saveSpentInfo(boostJobEntity, boostJobProof, params.time, params.txid, tx);
             const sentStatus = await matterInstance.sendRawTx(tx.toString());
+            console.log('Sent status', sentStatus);
             if (!sentStatus.txid) {
                 throw new ServiceError(500, 'unable to publish' + sentStatus);
             }
@@ -147,6 +154,7 @@ export class SubmitBoostSolution implements UseCase {
             });
             return savedResult;
         } catch (ex) {
+            console.log('ex', ex, ex.stack);
             if (ex && ex.message && ex.message.message && (/txn\-already\-known/.test(ex.message.message)) || /Transaction already in the mempool/.test(ex.message.message) ) {
                 return await this.saveSpentInfo(boostJobEntity, boostJobProof, params.time, params.txid, tx);
             }

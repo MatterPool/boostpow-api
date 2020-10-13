@@ -44,7 +44,7 @@ export class SubmitBoostJobProof implements UseCase {
             console.log('BoostJobProof could not be created', params.rawtx);
             return;
         }
-        console.log('SubmitBoostJob', boostJobProof);
+        console.log('SubmitBoostJobProof proofObject', boostJobProof);
 
         const tx = new bsv.Transaction(params.rawtx);
 
