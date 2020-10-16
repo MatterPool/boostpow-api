@@ -47,6 +47,8 @@ export class GetRandomBoostJobStatus implements UseCase {
 
         let status = 'COMPLETE';
         let totalBoostPowStrings = '';
+        let numOutputs = boostJobs.length;
+        let numOutputsCompleted = 0;
         for (const job of boostJobs) {
             if (!job.spenttxid) {
                 status = 'PENDING';
@@ -54,6 +56,7 @@ export class GetRandomBoostJobStatus implements UseCase {
             if (job.powstring) {
                 totalBoostPowStrings += job.spenttxid;
                 totalBoostPowStrings += job.powstring;
+                numOutputsCompleted++;
             }
             delete job.rawtx;
         }
@@ -67,6 +70,8 @@ export class GetRandomBoostJobStatus implements UseCase {
         return {
             jobId: boostJobs[0].txid,
             status: status,
+            numOutputs: numOutputs,
+            numOutputsCompleted: numOutputsCompleted,
             // tslint:disable-next-line: max-line-length
             instructions: 'Concatenate all spenttxid and powstrings in the order sha256(spenttxid1 + powstring1 + spenttxid2 + powstring2 + ...) in sequence and perform sha256 to obtain ~ 256 bits of entropy. Do not trust the \'sha256\' field. It is there for debugging purposes only.',
             sha256: hash,
