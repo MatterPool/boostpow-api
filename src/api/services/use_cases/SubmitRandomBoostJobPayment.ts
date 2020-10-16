@@ -59,6 +59,8 @@ export class SubmitRandomBoostJobPayment implements UseCase {
     }
     public createTransaction(
         content: string,
+        category: string,
+        tag: string,
         feeMenu: any,
         numOutputs: number,
         diff: number,
@@ -76,6 +78,8 @@ export class SubmitRandomBoostJobPayment implements UseCase {
         for (let i = 0; i < numOutputs; i++) {
             const boostOutputJob = boost.BoostPowJob.fromObject({
                 content: content,
+                category: category,
+                tag: tag,
                 diff: availableDiff,
                 additionalData: paymentInfo.txid
             })
@@ -154,7 +158,7 @@ export class SubmitRandomBoostJobPayment implements UseCase {
         return key;
     }
 
-    public async run(params: {rawtx: string, numOutputs: number, diff: number, content?: string}): Promise<any> {
+    public async run(params: {rawtx: string, numOutputs: number, diff: number, content?: string, category?: string, tag?: string}): Promise<any> {
         if (
             this.isEmpty(params.rawtx)
         ) {
@@ -195,7 +199,20 @@ export class SubmitRandomBoostJobPayment implements UseCase {
             contentNormalized = Buffer.from(contentNormalized, 'utf8');
         }
 
-        const boostJobsTx = this.createTransaction(contentNormalized, feeMenu, params.numOutputs, params.diff, paymentInfo, this.getServiceKey());
+        let categoryNormalized: any = params.category;
+        const CAT_REGEX = new RegExp('^[0-9a-fA-F]{8}$');
+        if (!CAT_REGEX.test(categoryNormalized)) {
+            categoryNormalized = Buffer.from(categoryNormalized, 'utf8');
+        }
+
+        let tagNormalized: any = params.tag;
+        const TTAG_REGEX = new RegExp('^[0-9a-fA-F]{40}$');
+        if (!TTAG_REGEX.test(tagNormalized)) {
+            tagNormalized = Buffer.from(tagNormalized, 'utf8');
+        }
+
+        // tslint:disable-next-line: max-line-length
+        const boostJobsTx = this.createTransaction(contentNormalized, categoryNormalized, tagNormalized, feeMenu, params.numOutputs, params.diff, paymentInfo, this.getServiceKey());
         await this.ensureTransactionBroadcasted(params.rawtx);
         await this.ensureTransactionBroadcasted(boostJobsTx);
         const boostJobs = boost.BoostPowJob.fromTransactionGetAllOutputs(new bsv.Transaction(boostJobsTx));

@@ -25,11 +25,15 @@ export class RandomController {
     public async submitRandomBoostJobPaymentPost(
         @BodyParam('rawtx') rawtx: string,
         @BodyParam('content') content: string,
+        @BodyParam('category') category: string,
+        @BodyParam('tag') tag: string,
         @BodyParam('diff') diff: number,
         @BodyParam('numOutputs') numOutputs: number,
     ) {
         return this.submitRandomBoostJobPayment.run({
             content,
+            category,
+            tag,
             rawtx,
             diff,
             numOutputs
