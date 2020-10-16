@@ -32,24 +32,26 @@ export class SubmitRandomBoostJobPayment implements UseCase {
     }
     private async ensureTransactionBroadcasted(rawtx: string) {
         const tx = new bsv.Transaction(rawtx);
-        if (this.checkIfTransactionExists(tx.hash)) {
+        if (await this.checkIfTransactionExists(tx.hash)) {
+            console.log('checkIfTransactionExists is true', tx.hash);
             return true;
         }
+        console.log('checkIfTransactionExists is false', tx.hash);
         try {
             const miner = new Minercraft.default({
               url: 'https://public.txq-app.com',
               headers: {
                   'content-type': 'application/json',
-                  'checkStatus': true, // Set check status to force checking tx instead of blindly broadcasting if it's not needed
+                  'checkstatus': true, // Set check status to force checking tx instead of blindly broadcasting if it's not needed
               },
             });
             const response = await miner.tx.push(rawtx, {
-              verbose: true,
               maxContentLength: 52428890,
               maxBodyLength: 52428890
             });
 
-            if (response && response.payload && response.payload.returnResult === 'success') {
+            if (response && response.returnResult === 'success') {
+                console.log('ensureTransactionBroadcasted TRUE SUCCESS', response);
                 return true;
             } else {
                 console.log('ensureTransactionBroadcasted failed', rawtx, response.payload);
@@ -67,18 +69,20 @@ export class SubmitRandomBoostJobPayment implements UseCase {
               url: 'https://public.txq-app.com',
               headers: {
                   'content-type': 'application/json',
-                  'checkStatus': true, // Set check status to force checking tx instead of blindly broadcasting if it's not needed
+                  'checkstatus': true, // Set check status to force checking tx instead of blindly broadcasting if it's not needed
               },
             });
             const response = await miner.tx.status(txid);
 
-            if (response && response.payload && response.payload.returnResult === 'success') {
+            if (response && response.returnResult === 'success') {
+                console.log('checkIfTransactionExists TRUE SUCCESS', txid, response);
                 return true;
             } else {
+                console.log('checkIfTransactionExists FALSE ', txid, response);
                 return false;
             }
         } catch (err) {
-            console.log('checkIfTransactionExists', txid, err);
+            console.log('checkIfTransactionExist exception', txid, err);
             throw err;
         }
     }
@@ -98,7 +102,7 @@ export class SubmitRandomBoostJobPayment implements UseCase {
         if (availableDiff < diff) {
             throw new ClientError(422, 'Invalid total difficulty units for fee');
         }
-        const boostOutputValue = 1000 + (availableDiff * feeMenu.feePerDifficultyPerOutput);
+        const boostOutputValue = 800 + (availableDiff * feeMenu.feePerDifficultyPerOutput);
         const outputs = []
         for (let i = 0; i < numOutputs; i++) {
             const boostOutputJob = boost.BoostPowJob.fromObject({

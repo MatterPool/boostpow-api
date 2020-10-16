@@ -31,7 +31,6 @@ export class GetRandomBoostJobStatus implements UseCase {
         const boostJobs = await this.boostJobRepo.find({
             txid: params.txid
         });
-        console.log('boostJobs', boostJobs);
 
         if (!boostJobs.length) {
             throw new ClientError(404, 'job not found');
