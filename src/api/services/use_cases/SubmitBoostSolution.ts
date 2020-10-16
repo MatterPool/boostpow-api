@@ -8,15 +8,11 @@ import { BoostJobRepository } from '../../repositories/BoostJobRepository';
 import { GetBoostJob } from './GetBoostJob';
 import * as boost from '@matterpool/boostpow-js';
 import * as bsv from 'bsv';
-import * as matter from 'mattercloudjs';
-import { ServiceError } from '../errors/ServiceError';
 import { GetUnredeemedBoostJobUtxos } from './GetUnredeemedBoostJobUtxos';
 import { BoostBlockchainMonitor } from '../../../api/models/boost-blockchain-monitor';
 import { BoostJob } from '../../../api/models/BoostJob';
+import * as Minercraft from 'minercraft';
 
-const matterInstance = matter.instance({
-    api_key:  process.env.MATTERCLOUD_API_KEY
-});
 @Service()
 export class SubmitBoostSolution implements UseCase {
 
@@ -85,6 +81,36 @@ export class SubmitBoostSolution implements UseCase {
             pubKey: childPrivateKey.publicKey,
         }
     }
+    private async ensureTransactionBroadcasted(rawtx: string) {
+        for (let i = 0; i < 3; i++) {
+            try {
+                const miner = new Minercraft.default({
+                url: 'https://public.txq-app.com',
+                headers: {
+                    'content-type': 'application/json',
+                    'checkStatus': true, // Set check status to force checking tx instead of blindly broadcasting if it's not needed
+                },
+                });
+                const response = await miner.tx.push(rawtx, {
+                verbose: true,
+                maxContentLength: 52428890,
+                maxBodyLength: 52428890
+                });
+
+                if (response && response.payload && response.payload.returnResult === 'success') {
+                    return true;
+                } else if (response && response.payload) {
+                    return true;
+                } else {
+                    return false;
+                }
+            } catch (err) {
+                console.log('ensureTransactionBroadcasted Solution', rawtx, err);
+                throw err;
+            }
+        }
+        return false;
+    }
 
     public async run(params: {
         txid: string,
@@ -95,7 +121,6 @@ export class SubmitBoostSolution implements UseCase {
         time: number,
         index?: number}): Promise<any> {
         console.log('SubmitBoostSolutionUpdated', params);
-        console.log('SubmitBoostSolutionUpdated2', params);
         if (
             !params.txid ||
             !params.extraNonce2
@@ -114,7 +139,7 @@ export class SubmitBoostSolution implements UseCase {
             vout: params.vout,
         });
         // Get the boost job
-        console.log('boostJobEntity', boostJobEntity);
+
         const boostJob = boost.BoostPowJob.fromRawTransaction(boostJobEntity.rawtx);
 
         const keyPair = SubmitBoostSolution.getKeyPairWithIndex(params.index || undefined);
@@ -145,37 +170,20 @@ export class SubmitBoostSolution implements UseCase {
         }
         console.log('About to create redeem...');
         const tx = boost.BoostPowJob.createRedeemTransaction(boostJob, boostJobProof, privKey.toString(), process.env.MINER_RECEIVE_ADDRESS);
+        console.log('Redeem tx created', tx);
 
-        try {
-            const savedResult = await this.saveSpentInfo(boostJobEntity, boostJobProof, params.time, params.txid, tx);
-            const sentStatus = await matterInstance.sendRawTx(tx.toString());
-            console.log('Sent status', sentStatus);
-            if (!sentStatus.txid) {
-                throw new ServiceError(500, 'unable to publish' + sentStatus);
-            }
-            this.getUnredeemedBoostJobUtxos.run().then(async (txoOutputs) => {
-                const monitor = await BoostBlockchainMonitor.instance();
-                monitor.updateFilters(txoOutputs);
-            }).catch((err) => {
-                console.log(err);
-            });
-            return savedResult;
-        } catch (ex) {
-            console.log('ex', ex, ex.stack);
-            if (ex && ex.message && ex.message.message && (/txn\-already\-known/.test(ex.message.message)) || /Transaction already in the mempool/.test(ex.message.message) ) {
-                return await this.saveSpentInfo(boostJobEntity, boostJobProof, params.time, params.txid, tx);
-            }
-
-            if (ex && ex.message && ex.message.message && (/txn\-mempool\-conflict/.test(ex.message.message)) || /txn\-mempool\-conflict/.test(ex.message.message) ) {
-                console.log('Job has mempool spent conflict: ', params.txid);
-                return await this.markJobAsSpentBefore(boostJobEntity);
-            }
-
-            if (ex && ex.message && ex.message.message && (/Missing inputs/.test(ex.message.message)) || /Missing inputs/.test(ex.message.message) ) {
-                console.log('Job was already spent: ', params.txid);
-                return await this.markJobAsSpentBefore(boostJobEntity);
-            }
-            throw ex;
+        const savedResult = await this.saveSpentInfo(boostJobEntity, boostJobProof, params.time, params.txid, tx);
+        const sentStatus = await this.ensureTransactionBroadcasted(tx.toString());
+        console.log('Sent status', tx.hash, sentStatus);
+        if (!sentStatus) {
+            await this.markJobAsSpentBefore(boostJobEntity);
         }
+        this.getUnredeemedBoostJobUtxos.run().then(async (txoOutputs) => {
+            const monitor = await BoostBlockchainMonitor.instance();
+            monitor.updateFilters(txoOutputs);
+        }).catch((err) => {
+            console.log(err);
+        });
+        return savedResult;
     }
 }
