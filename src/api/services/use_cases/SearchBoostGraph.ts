@@ -189,7 +189,7 @@ export class SearchBoostGraph implements UseCase {
                 .setParameters(sqlParams)
                 .getMany();
             for (const item of recordsUnmined) {
-                unminedJobs.push(BoostJobStatus.validateAndSerializeUnmined(item));
+                unminedJobs.push(BoostJobStatus.validateAndSerializeUnmined(item, item.vout));
             }
         }
         return {

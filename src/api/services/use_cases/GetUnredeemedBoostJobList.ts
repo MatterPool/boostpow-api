@@ -3,7 +3,7 @@ import { UseCase } from './UseCase';
 import { BoostJobRepository } from '../../repositories/BoostJobRepository';
 import { OrmRepository } from 'typeorm-typedi-extensions';
 import { IsNull } from 'typeorm';
-import * as boost from 'boostpow-js';
+import * as boost from '@matterpool/boostpow-js';
 import * as bsv from 'bsv';
 import { BoostJob } from '../../../api/models/BoostJob';
 

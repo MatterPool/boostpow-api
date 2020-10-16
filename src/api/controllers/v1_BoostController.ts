@@ -218,5 +218,4 @@ export class BoostController {
             throw e;
         });
     }
-
 }

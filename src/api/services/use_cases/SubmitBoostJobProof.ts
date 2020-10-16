@@ -4,7 +4,7 @@ import { Service } from 'typedi';
 import { UseCase } from './UseCase';
 import { GetUnredeemedBoostJobUtxos } from './GetUnredeemedBoostJobUtxos';
 import { BoostBlockchainMonitor } from '../../../api/models/boost-blockchain-monitor';
-import * as boost from 'boostpow-js';
+import * as boost from '@matterpool/boostpow-js';
 import { OrmRepository } from 'typeorm-typedi-extensions';
 import { BoostJobRepository } from '../../../api/repositories/BoostJobRepository';
 import * as bsv from 'bsv';

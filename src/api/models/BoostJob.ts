@@ -6,7 +6,7 @@ export class BoostJob {
     @PrimaryColumn('varchar')
     public txid: string;
 
-    @Column({ name: 'vout' })
+    @PrimaryColumn('integer')
     public vout: number;
 
     @Column({ name: 'scripthash' })
@@ -32,6 +32,12 @@ export class BoostJob {
 
     @Column({ name: 'spentscripthash' })
     public spentscripthash: string;
+
+    @Column({ name: 'spends_parenttxid' })
+    public spends_parenttxid: string;
+
+    @Column({ name: 'spends_parentvout' })
+    public spends_parentvout: number;
 
     @Column({ name: 'spentrawtx' })
     public spentrawtx: string;

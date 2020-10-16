@@ -1,7 +1,7 @@
 import Container from 'typedi';
 import { GetUnredeemedBoostJobUtxos } from '../services/use_cases/GetUnredeemedBoostJobUtxos';
 import * as bitcoinfiles from 'bitcoinfiles-sdk';
-import * as boost from 'boostpow-js';
+import * as boost from '@matterpool/boostpow-js';
 import { SubmitBoostJobProof } from '../services/use_cases/SubmitBoostJobProof';
 import { SubmitBoostJob } from '../services/use_cases/SubmitBoostJob';
 

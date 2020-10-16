@@ -3,7 +3,7 @@
 import { Service } from 'typedi';
 import { UseCase } from './UseCase';
 import { ClientError } from '../errors/ClientError';
-import * as boost from 'boostpow-js';
+import * as boost from '@matterpool/boostpow-js';
 import * as matter from 'mattercloudjs';
 import { BoostJobRepository } from '../../repositories/BoostJobRepository';
 import { OrmRepository } from 'typeorm-typedi-extensions';
@@ -61,7 +61,6 @@ export class SubmitBoostJob implements UseCase {
             vout: boostJob.getVout(),
         });
         if (!boostJobEntity) {
-
             const newBoostJob = new BoostJob();
             newBoostJob.inserted_at = Math.round((new Date().getTime()) / 1000);
             newBoostJob.txid = boostJob.getTxid();

@@ -1,9 +1,10 @@
 import { BoostJob } from './BoostJob';
-import { BoostPowJob } from 'boostpow-js';
+import { BoostPowJob } from '@matterpool/boostpow-js';
 
 export class BoostJobStatus {
     public static validateAndSerialize(boostJobEntity: BoostJob, expanded = true, debug = true) {
-        const boostJob = BoostPowJob.fromRawTransaction(boostJobEntity.rawtx);
+        const boostJob = BoostPowJob.fromRawTransaction(boostJobEntity.rawtx, boostJobEntity.vout);
+        console.log('serializer running', boostJob, boostJobEntity);
         if (expanded) {
             const obj = {
                 // boostPowSignal: boostJobEntity.powmetadata ? boostJobEntity.powstring + boostJobEntity.powmetadata : boostJobEntity.powstring,
@@ -56,8 +57,8 @@ export class BoostJobStatus {
             }
         }
     }
-    public static validateAndSerializeUnmined(boostJobEntity: BoostJob, expanded = true) {
-        const boostJob = BoostPowJob.fromRawTransaction(boostJobEntity.rawtx);
+    public static validateAndSerializeUnmined(boostJobEntity: BoostJob, vout: number = 0, expanded = true) {
+        const boostJob = BoostPowJob.fromRawTransaction(boostJobEntity.rawtx, vout);
         if (expanded) {
             return {
                 boostJobId: boostJob.getTxid() + '.' + boostJob.getVout(),

@@ -6,7 +6,7 @@ import { ClientError } from '../errors/ClientError';
 import { OrmRepository } from 'typeorm-typedi-extensions';
 import { BoostJobRepository } from '../../repositories/BoostJobRepository';
 import { GetBoostJob } from './GetBoostJob';
-import * as boost from 'boostpow-js';
+import * as boost from '@matterpool/boostpow-js';
 import * as bsv from 'bsv';
 import * as matter from 'mattercloudjs';
 import { ServiceError } from '../errors/ServiceError';

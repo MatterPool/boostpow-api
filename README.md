@@ -50,7 +50,6 @@ Based off: https://github.com/w3tecch/express-typescript-boilerplate
 
 
 
-
 # Boost POW
 
 **A Protocol for Buying and Selling Proof-of-Work Embedded in Bitcoin Script**
@@ -464,6 +463,154 @@ debug | boolean - default true
 expanded | boolean - default true
 be | boolean Big endian or not
 paginationToken |  token to use to paginate for everything after
+
+## Boost POW Entropy Sales Manager (Entropy-as-a-service)
+
+Generate secure provably unknown random numbers using Boost POW.
+
+The request flow:
+
+0. Client requests a feeQuote for the price per Boost outputs number at various difficulty.
+1. Ckient submits p2pkh payment request in the amount for the desired amount of difficulty for the Boost random number
+2. Server responds with a txid and Boost output ddetails as the receipt.
+3. Cliient queries the job request by txid, awaiting for the status to be `COMPLETE` (Boost POW outputs are all mined)
+
+
+### Get feeQuote for Boost POW Entropy
+
+```shell
+curl "https://graph.boostpow.com/api/v1/main/service/feeQuote"
+
+{
+    "baseFeePerOutput": 1000,
+    "feePerDifficultyPerOutput": 50,
+    "serviceAddress": "1HrPapZusrjYvafbbDWUw8iG8PJKXZLYTH",
+    "instructions": "Create a p2pkh payment transaction to the serviceAddress for the desired level of security in outputs and difficulty. Send the transaction payment to /api/v1/main/service/pay"
+}
+
+```
+
+```json
+// GET https://graph.boostpow.com/api/v1/main/service/feeQuote
+{
+    "baseFeePerOutput": 1000,
+    "feePerDifficultyPerOutput": 50,
+    "serviceAddress": "1HrPapZusrjYvafbbDWUw8iG8PJKXZLYTH",
+    "instructions": "Create a p2pkh payment transaction to the serviceAddress for the desired level of security in outputs and difficulty. Send the transaction payment to /api/v1/main/service/pay"
+}
+
+```
+
+### Submit Job Request for Boost POW Entropy
+
+```shell
+curl "https://graph.boostpow.com/api/v1/main/service/feeQuote"
+
+{
+  "content": "any random or static data",
+  "numOutputs": 2,
+  "diff": 2,
+  "rawtx": "0001221... payment transaction to address: 1ndd"
+}
+
+```
+
+```json
+// POST https://graph.boostpow.com/api/v1/main/service/pay
+{
+  "content": "any random or static data",
+  "numOutputs": 2,
+  "diff": 2,
+  "rawtx": "0001221... payment transaction to address: 1ndd"
+}
+
+```
+
+### Check Job Status (Random Number Generator)
+
+```shell
+curl "https://graph.boostpow.com/api/v1/main/service/b20122dc091be50478fb122b32e9602c2853ad1f3eb2825e9d0c119158ce2864"
+
+{
+  "status": "COMPLETE|PENDING",
+  "boostJobs": {
+    "boostPowString": "42000000e36345ab06b18b402e1a86a0cd2c2b633259bfd71613d3bfdb63fd8d53982dbaa8da27b10e739cda09da551e70e5313fdfeec413564d3777f23241a8507910e8bfbe875f6066061c806eb221",
+    "boostPowMetadata": "00000000000000000000000000000000000000000af0c49c7e8c842243913bbea2491027cf4e6babb0005a92b20e000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+    "boostHash": "000000000023375928727dd8bb58657c4e64ea88e8fc9f9170d4ed0bdbb99239",
+    "boostJobId": "b20122dc091be50478fb122b32e9602c2853ad1f3eb2825e9d0c119158ce2864.0",
+    "boostJobProofId": "46cee450dae826f33a3f5ea4dc2cd20e67b039021901198a1ef3c8e43c5efd0f.0",
+    "boostJob": {
+      "boostJobId": "b20122dc091be50478fb122b32e9602c2853ad1f3eb2825e9d0c119158ce2864.0",
+      "createdTime": 1591444567,
+      "txid": "b20122dc091be50478fb122b32e9602c2853ad1f3eb2825e9d0c119158ce2864",
+      "vout": 0,
+      "scripthash": "e6fe34a28f9b2ae75147f24dd337579d6c74bdcb8167d89a2067221f0135f4a5",
+      "value": 80000,
+      "diff": 40,
+      "time": 1602731711,
+      "rawtx": "0100000001ec6171784055897236cf18f66315b96b49d7ad671780a2c24ed2090f3f608882010000006b483045022100f54754fe8628caeabdde67e3a1d0524d12813f9a9e7b8852e53d14871b07e12c0220440495e740f6e6e5a164ab398b8eb5bda255eeeb2ab7529be0d572efb21a72d6412103746824b15ff8434b15bfaedf406eb5c6577d5ef4d51d93a0bf588c63022ccc7affffffff028038010000000000e108626f6f7374706f7775044200000020e36345ab06b18b402e1a86a0cd2c2b633259bfd71613d3bfdb63fd8d53982dba046066061c14000000000000000000000000000000000000000004000000002000000000000000000000000000000000000000000000000000000000000000007e7c557a766b7e52796b557a8254887e557a8258887e7c7eaa7c6b7e7e7c8254887e6c7e7c8254887eaa01007e816c825488537f7681530121a5696b768100a0691d00000000000000000000000000000000000000000000000000000000007e6c539458959901007e819f6976a96c88aca70e4700000000001976a914079681107d10ba60c9c6a4fc1ac76f9f6ec5f03f88ac00000000",
+      "spentTxid": "46cee450dae826f33a3f5ea4dc2cd20e67b039021901198a1ef3c8e43c5efd0f",
+      "spentVout": 0,
+      "spentRawtx": "01000000016428ce5891110c9d5e82b23e1fad53282c60e9322b12fb7804e51b09dc2201b2000000009747304402201290977ef42d09d7bc4b9767001e30261768de9eb63ac1c2adc5cc1afafc6b610220692886a0f795306121c69feb8880129b86beee7eea6bd7cdc6565608c18eba4c412102d57db0c7046be47cb88e0e737b3037f7f29ef1c78ca412860eceffa617fee7ef04806eb22104bfbe875f08b20e00000000000004b0005a92140af0c49c7e8c842243913bbea2491027cf4e6babffffffff017b360100000000001976a9140af0c49c7e8c842243913bbea2491027cf4e6bab88ac00000000",
+      "spentScripthash": null
+    },
+    "boostData": {
+      "categoryutf8": "B",
+      "category": "00000042",
+      "contentutf8": "�-�S��cۿ�\u0013\u0016׿Y2c+,͠�\u001a.@��\u0006�Ec�",
+      "content": "ba2d98538dfd63dbbfd31316d7bf5932632b2ccda0861a2e408bb106ab4563e3",
+      "tagutf8": "",
+      "tag": "0000000000000000000000000000000000000000",
+      "usernonce": "00000000",
+      "additionaldatautf8": "",
+      "additionaldata": "0000000000000000000000000000000000000000000000000000000000000000"
+    }
+  }
+}
+
+```
+
+```json
+// GET https://graph.boostpow.com/api/v1/main/service/b20122dc091be50478fb122b32e9602c2853ad1f3eb2825e9d0c119158ce2864
+
+{
+  "status": "COMPLETE|PENDING",
+  "boostJobs": {
+    "boostPowString": "42000000e36345ab06b18b402e1a86a0cd2c2b633259bfd71613d3bfdb63fd8d53982dbaa8da27b10e739cda09da551e70e5313fdfeec413564d3777f23241a8507910e8bfbe875f6066061c806eb221",
+    "boostPowMetadata": "00000000000000000000000000000000000000000af0c49c7e8c842243913bbea2491027cf4e6babb0005a92b20e000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+    "boostHash": "000000000023375928727dd8bb58657c4e64ea88e8fc9f9170d4ed0bdbb99239",
+    "boostJobId": "b20122dc091be50478fb122b32e9602c2853ad1f3eb2825e9d0c119158ce2864.0",
+    "boostJobProofId": "46cee450dae826f33a3f5ea4dc2cd20e67b039021901198a1ef3c8e43c5efd0f.0",
+    "boostJob": {
+      "boostJobId": "b20122dc091be50478fb122b32e9602c2853ad1f3eb2825e9d0c119158ce2864.0",
+      "createdTime": 1591444567,
+      "txid": "b20122dc091be50478fb122b32e9602c2853ad1f3eb2825e9d0c119158ce2864",
+      "vout": 0,
+      "scripthash": "e6fe34a28f9b2ae75147f24dd337579d6c74bdcb8167d89a2067221f0135f4a5",
+      "value": 80000,
+      "diff": 40,
+      "time": 1602731711,
+      "rawtx": "0100000001ec6171784055897236cf18f66315b96b49d7ad671780a2c24ed2090f3f608882010000006b483045022100f54754fe8628caeabdde67e3a1d0524d12813f9a9e7b8852e53d14871b07e12c0220440495e740f6e6e5a164ab398b8eb5bda255eeeb2ab7529be0d572efb21a72d6412103746824b15ff8434b15bfaedf406eb5c6577d5ef4d51d93a0bf588c63022ccc7affffffff028038010000000000e108626f6f7374706f7775044200000020e36345ab06b18b402e1a86a0cd2c2b633259bfd71613d3bfdb63fd8d53982dba046066061c14000000000000000000000000000000000000000004000000002000000000000000000000000000000000000000000000000000000000000000007e7c557a766b7e52796b557a8254887e557a8258887e7c7eaa7c6b7e7e7c8254887e6c7e7c8254887eaa01007e816c825488537f7681530121a5696b768100a0691d00000000000000000000000000000000000000000000000000000000007e6c539458959901007e819f6976a96c88aca70e4700000000001976a914079681107d10ba60c9c6a4fc1ac76f9f6ec5f03f88ac00000000",
+      "spentTxid": "46cee450dae826f33a3f5ea4dc2cd20e67b039021901198a1ef3c8e43c5efd0f",
+      "spentVout": 0,
+      "spentRawtx": "01000000016428ce5891110c9d5e82b23e1fad53282c60e9322b12fb7804e51b09dc2201b2000000009747304402201290977ef42d09d7bc4b9767001e30261768de9eb63ac1c2adc5cc1afafc6b610220692886a0f795306121c69feb8880129b86beee7eea6bd7cdc6565608c18eba4c412102d57db0c7046be47cb88e0e737b3037f7f29ef1c78ca412860eceffa617fee7ef04806eb22104bfbe875f08b20e00000000000004b0005a92140af0c49c7e8c842243913bbea2491027cf4e6babffffffff017b360100000000001976a9140af0c49c7e8c842243913bbea2491027cf4e6bab88ac00000000",
+      "spentScripthash": null
+    },
+    "boostData": {
+      "categoryutf8": "B",
+      "category": "00000042",
+      "contentutf8": "�-�S��cۿ�\u0013\u0016׿Y2c+,͠�\u001a.@��\u0006�Ec�",
+      "content": "ba2d98538dfd63dbbfd31316d7bf5932632b2ccda0861a2e408bb106ab4563e3",
+      "tagutf8": "",
+      "tag": "0000000000000000000000000000000000000000",
+      "usernonce": "00000000",
+      "additionaldatautf8": "",
+      "additionaldata": "0000000000000000000000000000000000000000000000000000000000000000"
+    }
+  }
+}
+
+```
 
 ## Publish Widget
 

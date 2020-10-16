@@ -51,7 +51,7 @@ export class CreateBoostJobTable1583012952090 implements MigrationInterface {
                 {
                     name: 'rawtx',
                     type: 'varchar',
-                    length: '6000',
+                    length: '60000',
                     isPrimary: false,
                     isNullable: false,
                     isUnique: false,
