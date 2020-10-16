@@ -12,7 +12,6 @@ export class BitcoinUtils {
         const hdPrivateKey = new bitcoin.HDPrivateKey(xprv);
         const derivePath = `m/44'/0'/0'/0/${num}`;
         const child = hdPrivateKey.deriveChild(derivePath);
-        console.log('chiild key', child);
         return new bitcoin.PrivateKey(child.privateKey);
     }
 }

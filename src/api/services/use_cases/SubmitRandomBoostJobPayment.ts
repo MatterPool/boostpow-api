@@ -31,6 +31,10 @@ export class SubmitRandomBoostJobPayment implements UseCase {
         return false;
     }
     private async ensureTransactionBroadcasted(rawtx: string) {
+        const tx = new bsv.Transaction(rawtx);
+        if (this.checkIfTransactionExists(tx.hash)) {
+            return true;
+        }
         try {
             const miner = new Minercraft.default({
               url: 'https://public.txq-app.com',
@@ -47,13 +51,34 @@ export class SubmitRandomBoostJobPayment implements UseCase {
 
             if (response && response.payload && response.payload.returnResult === 'success') {
                 return true;
-            } else if (response && response.payload) {
+            } else {
+                console.log('ensureTransactionBroadcasted failed', rawtx, response.payload);
+                return false;
+            }
+        } catch (err) {
+            console.log('ensureTransactionBroadcasted', rawtx, err);
+            throw err;
+        }
+    }
+
+    private async checkIfTransactionExists(txid: string) {
+        try {
+            const miner = new Minercraft.default({
+              url: 'https://public.txq-app.com',
+              headers: {
+                  'content-type': 'application/json',
+                  'checkStatus': true, // Set check status to force checking tx instead of blindly broadcasting if it's not needed
+              },
+            });
+            const response = await miner.tx.status(txid);
+
+            if (response && response.payload && response.payload.returnResult === 'success') {
                 return true;
             } else {
                 return false;
             }
         } catch (err) {
-            console.log('ensureTransactionBroadcasted', rawtx, err);
+            console.log('checkIfTransactionExists', txid, err);
             throw err;
         }
     }
@@ -73,7 +98,7 @@ export class SubmitRandomBoostJobPayment implements UseCase {
         if (availableDiff < diff) {
             throw new ClientError(422, 'Invalid total difficulty units for fee');
         }
-        const boostOutputValue = 600 + (availableDiff * feeMenu.feePerDifficultyPerOutput);
+        const boostOutputValue = 1000 + (availableDiff * feeMenu.feePerDifficultyPerOutput);
         const outputs = []
         for (let i = 0; i < numOutputs; i++) {
             const boostOutputJob = boost.BoostPowJob.fromObject({
@@ -211,11 +236,10 @@ export class SubmitRandomBoostJobPayment implements UseCase {
 
         // tslint:disable-next-line: max-line-length
         const boostJobsTx = this.createTransaction(contentNormalized, categoryNormalized, tagNormalized, feeMenu, params.numOutputs, params.diff, paymentInfo, this.getServiceKey());
-        if (!await this.ensureTransactionBroadcasted(params.rawtx)) {
+        if (!(await this.ensureTransactionBroadcasted(params.rawtx))) {
             throw new ClientError(500, 'Failed to broadcast');
         }
-        await this.ensureTransactionBroadcasted(boostJobsTx);
-        if (!await this.ensureTransactionBroadcasted(boostJobsTx)) {
+        if (!(await this.ensureTransactionBroadcasted(boostJobsTx))) {
             throw new ClientError(500, 'Failed to broadcast2');
         }
         const boostJobs = boost.BoostPowJob.fromTransactionGetAllOutputs(new bsv.Transaction(boostJobsTx));
