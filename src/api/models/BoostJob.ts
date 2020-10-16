@@ -39,6 +39,9 @@ export class BoostJob {
     @Column({ name: 'spends_parentvout' })
     public spends_parentvout: number;
 
+    @Column({ name: 'job_was_spent_before_error' })
+    public job_was_spent_before_error: number;
+
     @Column({ name: 'spentrawtx' })
     public spentrawtx: string;
 

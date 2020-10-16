@@ -12,6 +12,7 @@ import * as matter from 'mattercloudjs';
 import { ServiceError } from '../errors/ServiceError';
 import { GetUnredeemedBoostJobUtxos } from './GetUnredeemedBoostJobUtxos';
 import { BoostBlockchainMonitor } from '../../../api/models/boost-blockchain-monitor';
+import { BoostJob } from '../../../api/models/BoostJob';
 
 const matterInstance = matter.instance({
     api_key:  process.env.MATTERCLOUD_API_KEY
@@ -53,6 +54,12 @@ export class SubmitBoostSolution implements UseCase {
             await this.boostJobRepo.save(boostJobEntity);
         }
         return await this.getBoostJob.run({txid: boostJobTxId});
+    }
+
+    public async markJobAsSpentBefore(boostJobEntity: BoostJob) {
+        boostJobEntity.job_was_spent_before_error = 1;
+        console.log('markJobAsSpentBefore', boostJobEntity);
+        await this.boostJobRepo.save(boostJobEntity);
     }
 
     public async runWithRawTx(params: { rawtx: string }) {
@@ -159,8 +166,14 @@ export class SubmitBoostSolution implements UseCase {
                 return await this.saveSpentInfo(boostJobEntity, boostJobProof, params.time, params.txid, tx);
             }
 
+            if (ex && ex.message && ex.message.message && (/txn\-mempool\-conflict/.test(ex.message.message)) || /txn\-mempool\-conflict/.test(ex.message.message) ) {
+                console.log('Job has mempool spent conflict: ', params.txid);
+                return await this.markJobAsSpentBefore(boostJobEntity);
+            }
+
             if (ex && ex.message && ex.message.message && (/Missing inputs/.test(ex.message.message)) || /Missing inputs/.test(ex.message.message) ) {
-                return await this.saveSpentInfo(boostJobEntity, boostJobProof, params.time, params.txid, tx);
+                console.log('Job was already spent: ', params.txid);
+                return await this.markJobAsSpentBefore(boostJobEntity);
             }
             throw ex;
         }
