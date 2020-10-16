@@ -22,7 +22,7 @@ export class GetRandomBoostFeeQuote implements UseCase {
             legalDisclaimer: 'Use at own risk. Funds will be locked permanently into a Bitcoin Boost POW smart contract. MatterPool Inc. makes no warranty or guarantee of fitness for any use. Experimental alpha software. No change is returned that is sent to this smart contract, it is irreversbly locked up in a POW puzzle.',
 
             baseFeePerOutput: 1000,
-            feePerDifficultyPerOutput: 500,
+            feePerDifficultyPerOutput: 50,
 
             serviceAddress: this.getServiceAddress().toString(),
             serviceDescription: 'Entropy as a service. Client can request level of entropy comparable to bitcoin economy (difficulty target). Client can get provably unknown random numbers (~ 256 bits) by specifying a distribution of numOutputs > 1.',

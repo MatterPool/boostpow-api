@@ -94,11 +94,11 @@ export class SubmitBoostJob implements UseCase {
             }
         }
         if (!boostJobEntity.powstring || !boostJobEntity.powmetadata || !boostJobEntity.boosthash) {
-            console.log('Checking pow...', boostJobEntity);
+            console.log('Checking pow...');
             // Check to see if the script hash is spent
             const history = await matterInstance.getScriptHashHistory(boostJobEntity.scripthash, {});
             for (const item of history.results) {
-                console.log('Checking item...', item);
+                console.log('Checking item...');
                 const txraw = await matterInstance.getTxRaw(item.txid);
                 let boostProof;
                 try {

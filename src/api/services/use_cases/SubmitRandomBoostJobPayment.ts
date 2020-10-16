@@ -77,9 +77,9 @@ export class SubmitRandomBoostJobPayment implements UseCase {
         const outputs = []
         for (let i = 0; i < numOutputs; i++) {
             const boostOutputJob = boost.BoostPowJob.fromObject({
-                content: content,
-                category: category,
-                tag: tag,
+                content: content ? content : undefined,
+                category: category ? category : undefined,
+                tag: tag ? tag : undefined,
                 diff: availableDiff,
                 additionalData: paymentInfo.txid
             })
@@ -165,8 +165,6 @@ export class SubmitRandomBoostJobPayment implements UseCase {
             throw new ClientError(422, 'Required fields: rawtx. Optional: diff, numOutputs');
         }
         params.numOutputs = params.numOutputs || 1;
-
-
         params.diff = params.diff || 1; // It will get adjusted for maximum affordable below
 
         if (params.numOutputs > 100 || params.diff < 1 || params.diff > 100000000) {

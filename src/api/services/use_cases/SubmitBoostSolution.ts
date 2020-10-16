@@ -13,6 +13,7 @@ import { BoostBlockchainMonitor } from '../../../api/models/boost-blockchain-mon
 import { BoostJob } from '../../../api/models/BoostJob';
 import * as Minercraft from 'minercraft';
 
+
 @Service()
 export class SubmitBoostSolution implements UseCase {
 
@@ -54,7 +55,7 @@ export class SubmitBoostSolution implements UseCase {
 
     public async markJobAsSpentBefore(boostJobEntity: BoostJob) {
         boostJobEntity.job_was_spent_before_error = 1;
-        console.log('markJobAsSpentBefore', boostJobEntity);
+        console.log('markJobAsSpentBefore', boostJobEntity.txid, boostJobEntity.vout);
         await this.boostJobRepo.save(boostJobEntity);
     }
 
@@ -105,7 +106,7 @@ export class SubmitBoostSolution implements UseCase {
                     return false;
                 }
             } catch (err) {
-                console.log('ensureTransactionBroadcasted Solution', rawtx, err);
+                console.log('ensureTransactionBroadcasted Solution', err);
                 throw err;
             }
         }
@@ -127,7 +128,7 @@ export class SubmitBoostSolution implements UseCase {
         ) {
             throw new ClientError(422, 'required fields: txid, vout, nonce, extraNonce1, extraNonce2, time');
         }
-        console.log('this.getBoostJob.run({txid: params.txid});', params.txid);
+        console.log('this.getBoostJob.run({txid: params.txid});', params.txid, params.vout);
         const jobStatus = await this.getBoostJob.run({txid: params.txid, vout: params.vout});
         console.log('this.getBoostJob.run({txid: params.txid}); returns', jobStatus);
         if (!jobStatus) {
@@ -140,7 +141,7 @@ export class SubmitBoostSolution implements UseCase {
         });
         // Get the boost job
 
-        const boostJob = boost.BoostPowJob.fromRawTransaction(boostJobEntity.rawtx);
+        const boostJob = boost.BoostPowJob.fromRawTransaction(boostJobEntity.rawtx, params.vout);
 
         const keyPair = SubmitBoostSolution.getKeyPairWithIndex(params.index || undefined);
         const privKey = keyPair.privKey;
@@ -170,14 +171,22 @@ export class SubmitBoostSolution implements UseCase {
         }
         console.log('About to create redeem...');
         const tx = boost.BoostPowJob.createRedeemTransaction(boostJob, boostJobProof, privKey.toString(), process.env.MINER_RECEIVE_ADDRESS);
-        console.log('Redeem tx created', tx);
+        console.log('Redeem tx created', tx.hash);
+
+        try {
+            const sentStatus = await this.ensureTransactionBroadcasted(tx.toString());
+            console.log('Sent status', tx.hash, sentStatus);
+            if (!sentStatus) {
+                await this.markJobAsSpentBefore(boostJobEntity);
+                return;
+            }
+        } catch (e) {
+            await this.markJobAsSpentBefore(boostJobEntity);
+            throw e;
+        }
 
         const savedResult = await this.saveSpentInfo(boostJobEntity, boostJobProof, params.time, params.txid, tx);
-        const sentStatus = await this.ensureTransactionBroadcasted(tx.toString());
-        console.log('Sent status', tx.hash, sentStatus);
-        if (!sentStatus) {
-            await this.markJobAsSpentBefore(boostJobEntity);
-        }
+
         this.getUnredeemedBoostJobUtxos.run().then(async (txoOutputs) => {
             const monitor = await BoostBlockchainMonitor.instance();
             monitor.updateFilters(txoOutputs);
