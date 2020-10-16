@@ -211,8 +211,13 @@ export class SubmitRandomBoostJobPayment implements UseCase {
 
         // tslint:disable-next-line: max-line-length
         const boostJobsTx = this.createTransaction(contentNormalized, categoryNormalized, tagNormalized, feeMenu, params.numOutputs, params.diff, paymentInfo, this.getServiceKey());
-        await this.ensureTransactionBroadcasted(params.rawtx);
+        if (!await this.ensureTransactionBroadcasted(params.rawtx)) {
+            throw new ClientError(500, 'Failed to broadcast');
+        }
         await this.ensureTransactionBroadcasted(boostJobsTx);
+        if (!await this.ensureTransactionBroadcasted(boostJobsTx)) {
+            throw new ClientError(500, 'Failed to broadcast2');
+        }
         const boostJobs = boost.BoostPowJob.fromTransactionGetAllOutputs(new bsv.Transaction(boostJobsTx));
         const boostJobEntities = [];
         for (const boostJob of boostJobs) {

@@ -171,7 +171,7 @@ export class SubmitBoostSolution implements UseCase {
         }
         console.log('About to create redeem...');
         const tx = boost.BoostPowJob.createRedeemTransaction(boostJob, boostJobProof, privKey.toString(), process.env.MINER_RECEIVE_ADDRESS);
-        console.log('Redeem tx created', tx.hash);
+        console.log('Redeem tx created', tx.hash, tx.toString());
 
         try {
             const sentStatus = await this.ensureTransactionBroadcasted(tx.toString());
