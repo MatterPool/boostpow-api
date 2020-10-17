@@ -36,7 +36,7 @@ export class SubmitRandomBoostJobPayment implements UseCase {
             console.log('checkIfTransactionExists is true', tx.hash);
             return true;
         }
-        console.log('checkIfTransactionExists is false', tx.hash);
+        console.log('checkIfTransactionExists is false now about to try broadcasting...', tx.hash);
         try {
             const miner = new Minercraft.default({
               url: 'https://public.txq-app.com',
@@ -51,14 +51,18 @@ export class SubmitRandomBoostJobPayment implements UseCase {
             });
 
             if (response && response.returnResult === 'success') {
-                console.log('ensureTransactionBroadcasted TRUE SUCCESS', response);
+                console.log('ensureTransactionBroadcasted true success', response);
+                return true;
+            // tslint:disable-next-line: curly
+            } if (response && response.returnResult === 'failure' && response.resultDescription === 'ERROR: Transaction already in the mempool') {
+                console.log('ensureTransactionBroadcasted true success', response);
                 return true;
             } else {
-                console.log('ensureTransactionBroadcasted failed', rawtx, response.payload);
+                console.log('ensureTransactionBroadcasted not true', response);
                 return false;
             }
         } catch (err) {
-            console.log('ensureTransactionBroadcasted', rawtx, err);
+            console.log('ensureTransactionBroadcasted err', err);
             throw err;
         }
     }
