@@ -222,19 +222,19 @@ export class SubmitRandomBoostJobPayment implements UseCase {
 
         let contentNormalized: any = params.content;
         const TXID_REGEX = new RegExp('^[0-9a-fA-F]{64}$');
-        if (!TXID_REGEX.test(contentNormalized)) {
+        if (contentNormalized && !TXID_REGEX.test(contentNormalized)) {
             contentNormalized = Buffer.from(contentNormalized, 'utf8');
         }
 
         let categoryNormalized: any = params.category;
         const CAT_REGEX = new RegExp('^[0-9a-fA-F]{8}$');
-        if (!CAT_REGEX.test(categoryNormalized)) {
+        if (categoryNormalized && !CAT_REGEX.test(categoryNormalized)) {
             categoryNormalized = Buffer.from(categoryNormalized, 'utf8');
         }
 
         let tagNormalized: any = params.tag;
         const TTAG_REGEX = new RegExp('^[0-9a-fA-F]{40}$');
-        if (!TTAG_REGEX.test(tagNormalized)) {
+        if (tagNormalized && !TTAG_REGEX.test(tagNormalized)) {
             tagNormalized = Buffer.from(tagNormalized, 'utf8');
         }
 
