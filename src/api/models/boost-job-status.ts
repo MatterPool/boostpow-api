@@ -21,7 +21,7 @@ export class BoostJobStatus {
                     value: boostJob ? boostJob.getValue() : null,
                     diff: boostJob ? boostJob.getDiff() : null,
                     time: boostJobEntity ? boostJobEntity.time : null,
-                    rawtx: boostJobEntity.rawtx,
+                    // rawtx: boostJobEntity.rawtx,
                     spentTxid: boostJobEntity.spenttxid ? boostJobEntity.spenttxid : null,
                     spentVout: boostJobEntity.spentvout === undefined ? 0 : boostJobEntity.spentvout,
                     spentRawtx: boostJobEntity.spentrawtx ? boostJobEntity.spentrawtx : null,

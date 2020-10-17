@@ -6,6 +6,7 @@ import { ClientError } from '../errors/ClientError';
 import { BoostJobRepository } from '../../repositories/BoostJobRepository';
 import { OrmRepository } from 'typeorm-typedi-extensions';
 import * as bsv from 'bsv';
+import { BoostJobStatus } from '../../../api/models/boost-job-status';
 
 @Service()
 export class GetRandomBoostJobStatus implements UseCase {
@@ -58,7 +59,7 @@ export class GetRandomBoostJobStatus implements UseCase {
                 totalBoostPowStrings += job.powstring;
                 numOutputsCompleted++;
             }
-            delete job.rawtx;
+            // delete job.rawtx;
         }
         let hash = null;
         let dhash = null;
@@ -76,7 +77,10 @@ export class GetRandomBoostJobStatus implements UseCase {
             instructions: 'Concatenate all spenttxid and powstrings in the order sha256(spenttxid1 + powstring1 + spenttxid2 + powstring2 + ...) in sequence and perform sha256 to obtain ~ 256 bits of entropy. Do not trust the \'sha256\' field. It is there for debugging purposes only.',
             sha256: hash,
             hash256: dhash,
-            boostJobs: boostJobs
+            boostJobs: boostJobs.map((e) => {
+
+                return BoostJobStatus.validateAndSerialize(e, true)
+            })
         }
     }
 }
