@@ -163,7 +163,7 @@ export class SubmitBoostSolution implements UseCase {
             nonce: nonce.toString('hex'),
             minerPubKeyHash: pubKey._getID().toString('hex'),
         });
-        console.log('About to validate...');
+        console.log('About to validate...', boostJob, boostJobProof);
         const validation = boost.BoostPowJob.tryValidateJobProof(boostJob, boostJobProof);
 
         if (!validation || !validation.boostPowString || !validation.boostPowMetadata) {
