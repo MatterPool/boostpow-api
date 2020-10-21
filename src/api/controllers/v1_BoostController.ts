@@ -135,6 +135,27 @@ export class BoostController {
             throw e;
         });
     }
+
+    /**
+     * Get boost job status
+     *
+     * @param txid Transaction id of the boost job
+     * @param vout Transaction vout of the boost job
+     */
+    @Get('/v1/main/boost/job/:txid')
+    public async getJobStatus2(
+        @Param('txid') txid: string,
+        @QueryParam('vout') vout: number
+    ) {
+        return this.getBoostJobStatus.run({
+            txid: txid,
+            vout: vout
+        }).then((outcome) => {
+            return outcome;
+        }).catch((e) => {
+            throw e;
+        });
+    }
     /**
      * Search by many fields
      */

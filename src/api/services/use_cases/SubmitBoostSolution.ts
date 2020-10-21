@@ -169,7 +169,7 @@ export class SubmitBoostSolution implements UseCase {
         if (!validation || !validation.boostPowString || !validation.boostPowMetadata) {
             throw new ClientError(422, 'invalid boost solution');
         }
-        console.log('About to create redeem...');
+        console.log('About to create redeem...', validation);
         const tx = boost.BoostPowJob.createRedeemTransaction(boostJob, boostJobProof, privKey.toString(), process.env.MINER_RECEIVE_ADDRESS);
         console.log('Redeem tx created', tx.hash, tx.toString());
 

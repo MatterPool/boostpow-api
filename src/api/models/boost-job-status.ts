@@ -4,7 +4,7 @@ import { BoostPowJob } from '@matterpool/boostpow-js';
 export class BoostJobStatus {
     public static validateAndSerialize(boostJobEntity: BoostJob, expanded = true, debug = true) {
         const boostJob = BoostPowJob.fromRawTransaction(boostJobEntity.rawtx, boostJobEntity.vout);
-        console.log('validateAndSerialize', boostJob,  'dbvout: ', boostJobEntity.vout, ' vout is: ', boostJob.getVout());
+        console.log('validateAndSerialize', boostJobEntity, boostJob,  'dbvout: ', boostJobEntity.vout, ' vout is: ', boostJob.getVout());
         if (expanded) {
             const obj = {
                 // boostPowSignal: boostJobEntity.powmetadata ? boostJobEntity.powstring + boostJobEntity.powmetadata : boostJobEntity.powstring,
