@@ -29,7 +29,7 @@ export class GetUnredeemedBoostJobList implements UseCase {
     public static serializeBoostJob(job: BoostJob): any {
         const privKey = bsv.PrivateKey.fromWIF(process.env.MINER_PRIV_KEY);
         try {
-            const boostJobObj = boost.BoostPowJob.fromRawTransaction(job.rawtx);
+            const boostJobObj = boost.BoostPowJob.fromRawTransaction(job.rawtx, job.vout);
             return  {
                 id: job.txid + '-' + job.vout,
                 prevhash: boostJobObj.getContentHex(),
