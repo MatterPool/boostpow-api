@@ -21,7 +21,7 @@ export class SubmitBoostJobProof implements UseCase {
     }
 
     public async saveSpentInfo(boostJobEntity: any, boostJobProof: any, spentTx: bsv.Transaction) {
-        const boostJob = boost.BoostPowJob.fromRawTransaction(boostJobEntity.rawtx);
+        const boostJob = boost.BoostPowJob.fromRawTransaction(boostJobEntity.rawtx, boostJobEntity.vout);
         const powValidation = boost.BoostPowJob.tryValidateJobProof(boostJob, boostJobProof);
         // Now make sure it is saved to the db
         if (!boostJobEntity.spentrawtx) {

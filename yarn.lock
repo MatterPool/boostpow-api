@@ -32,10 +32,10 @@
     enabled "2.0.x"
     kuler "^2.0.0"
 
-"@matterpool/boostpow-js@^1.2.30":
-  version "1.2.30"
-  resolved "https://registry.yarnpkg.com/@matterpool/boostpow-js/-/boostpow-js-1.2.30.tgz#c87c17e7a23ff1518ac808d4d0487ad4e91d258e"
-  integrity sha512-TUlNboY1ZDbsYCtUOtPZWbb4GhKvuvGHReVI+FNcFncIYqE7rN1r7lV6tCO09ax/MRH6z9h3FhUiJga1Ouhg6A==
+"@matterpool/boostpow-js@^1.2.31":
+  version "1.2.31"
+  resolved "https://registry.yarnpkg.com/@matterpool/boostpow-js/-/boostpow-js-1.2.31.tgz#97f0d933be62d823a7730e58546d2a6efaaacd8a"
+  integrity sha512-gMyJpMULojHfDD7s79fR1qBhFezq5a9FUtBuI0QN35PRAPRkaLvCZqZC5EmpcM3yUfJfxI059GUKw57pV3+ZlQ==
   dependencies:
     "@types/node" "^13.7.7"
     axios "^0.18.0"
