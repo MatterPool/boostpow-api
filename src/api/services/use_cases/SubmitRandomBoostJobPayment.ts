@@ -63,7 +63,8 @@ export class SubmitRandomBoostJobPayment implements UseCase {
             }
         } catch (err) {
             console.log('ensureTransactionBroadcasted err', err);
-            throw err;
+            // throw err;
+            return false;
         }
     }
 
@@ -106,7 +107,7 @@ export class SubmitRandomBoostJobPayment implements UseCase {
         if (availableDiff < diff) {
             throw new ClientError(422, 'Invalid total difficulty units for fee');
         }
-        const boostOutputValue = 800 + (availableDiff * feeMenu.feePerDifficultyPerOutput);
+        const boostOutputValue = 600 + (availableDiff * feeMenu.feePerDifficultyPerOutput);
         const outputs = []
         for (let i = 0; i < numOutputs; i++) {
             const boostOutputJob = boost.BoostPowJob.fromObject({
