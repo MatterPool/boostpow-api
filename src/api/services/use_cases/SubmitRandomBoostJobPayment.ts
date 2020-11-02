@@ -46,15 +46,17 @@ export class SubmitRandomBoostJobPayment implements UseCase {
               },
             });
             const response = await miner.tx.push(rawtx, {
+              verbose: true,
               maxContentLength: 52428890,
               maxBodyLength: 52428890
             });
 
-            if (response && response.returnResult === 'success') {
+            if (response && response.payload && response.payload.returnResult === 'success') {
                 console.log('ensureTransactionBroadcasted true success', response);
                 return true;
             // tslint:disable-next-line: curly
-            } if (response && response.returnResult === 'failure' && response.resultDescription === 'ERROR: Transaction already in the mempool') {
+            } if (response && response.payload && response.payload.returnResult === 'failure' &&
+                response.payload.resultDescription === 'ERROR: Transaction already in the mempool') {
                 console.log('ensureTransactionBroadcasted true success', response);
                 return true;
             } else {
