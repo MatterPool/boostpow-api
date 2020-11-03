@@ -11,8 +11,7 @@ import * as bsv from 'bsv';
 import { GetUnredeemedBoostJobUtxos } from './GetUnredeemedBoostJobUtxos';
 import { BoostBlockchainMonitor } from '../../../api/models/boost-blockchain-monitor';
 import { BoostJob } from '../../../api/models/BoostJob';
-import * as Minercraft from 'minercraft';
-
+import * as axios from 'axios';
 
 @Service()
 export class SubmitBoostSolution implements UseCase {
@@ -85,22 +84,13 @@ export class SubmitBoostSolution implements UseCase {
     private async ensureTransactionBroadcasted(rawtx: string) {
         for (let i = 0; i < 3; i++) {
             try {
-                const miner = new Minercraft.default({
-                url: 'https://public.txq-app.com',
-                headers: {
+                const response = await axios.default.post(`${process.env.MAPI_ENDPOINT}/mapi/tx`, { rawtx }, { headers: {
                     'content-type': 'application/json',
-                    'checkStatus': true, // Set check status to force checking tx instead of blindly broadcasting if it's not needed
-                },
-                });
-                const response = await miner.tx.push(rawtx, {
-                verbose: true,
-                maxContentLength: 52428890,
-                maxBodyLength: 52428890
-                });
-
-                if (response && response.payload && response.payload.returnResult === 'success') {
+                    'checkstatus': true, // Set check status to force checking tx instead of blindly broadcasting if it's not needed
+                }});
+                if (response && response.data && response.data.payload && response.data.payload.returnResult === 'success') {
                     return true;
-                } else if (response && response.payload) {
+                } else if (response && response.data.payload) {
                     return true;
                 } else {
                     return false;

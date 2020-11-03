@@ -8,11 +8,11 @@ import { BoostJobRepository } from '../../repositories/BoostJobRepository';
 import { OrmRepository } from 'typeorm-typedi-extensions';
 import { BoostJob } from '../../models/BoostJob';
 import * as bsv from 'bsv';
-import * as Minercraft from 'minercraft';
 import { GetRandomBoostFeeQuote } from './GetRandomBoostFeeQuote';
 import { BitcoinUtils } from '../../../helpers/bitcoin-utils';
 import { ServiceError } from '../errors/ServiceError';
 import { GetRandomBoostJobStatus } from './GetRandomBoostJobStatus';
+import * as axios from 'axios';
 
 @Service()
 export class SubmitRandomBoostJobPayment implements UseCase {
@@ -38,25 +38,17 @@ export class SubmitRandomBoostJobPayment implements UseCase {
         }
         console.log('checkIfTransactionExists is false now about to try broadcasting...', tx.hash);
         try {
-            const miner = new Minercraft.default({
-              url: 'https://public.txq-app.com',
-              headers: {
-                  'content-type': 'application/json',
-                  'checkstatus': true, // Set check status to force checking tx instead of blindly broadcasting if it's not needed
-              },
-            });
-            const response = await miner.tx.push(rawtx, {
-              verbose: true,
-              maxContentLength: 52428890,
-              maxBodyLength: 52428890
-            });
+            const response = await axios.default.post(`${process.env.MAPI_ENDPOINT}/mapi/tx`, { rawtx }, { headers: {
+                'content-type': 'application/json',
+                'checkstatus': true, // Set check status to force checking tx instead of blindly broadcasting if it's not needed
+            }});
 
-            if (response && response.payload && response.payload.returnResult === 'success') {
+            if (response && response.data  && response.data.payload && response.data.payload.returnResult === 'success') {
                 console.log('ensureTransactionBroadcasted true success', response);
                 return true;
             // tslint:disable-next-line: curly
-            } if (response && response.payload && response.payload.returnResult === 'failure' &&
-                response.payload.resultDescription === 'ERROR: Transaction already in the mempool') {
+            } if (response && response.data.payload && response.data.payload.returnResult === 'failure' &&
+                response.data.payload.resultDescription === 'ERROR: Transaction already in the mempool') {
                 console.log('ensureTransactionBroadcasted true success', response);
                 return true;
             } else {
@@ -72,16 +64,12 @@ export class SubmitRandomBoostJobPayment implements UseCase {
 
     private async checkIfTransactionExists(txid: string) {
         try {
-            const miner = new Minercraft.default({
-              url: 'https://public.txq-app.com',
-              headers: {
-                  'content-type': 'application/json',
-                  'checkstatus': true, // Set check status to force checking tx instead of blindly broadcasting if it's not needed
-              },
-            });
-            const response = await miner.tx.status(txid);
+            const response = await axios.default.get(`${process.env.MAPI_ENDPOINT}/mapi/tx/${txid}`, { headers: {
+                'content-type': 'application/json',
+                'checkstatus': true, // Set check status to force checking tx instead of blindly broadcasting if it's not needed
+            }});
 
-            if (response && response.returnResult === 'success') {
+            if (response && response.data &&  response.data.payload && response.data.payload.returnResult === 'success') {
                 console.log('checkIfTransactionExists TRUE SUCCESS', txid, response);
                 return true;
             } else {
