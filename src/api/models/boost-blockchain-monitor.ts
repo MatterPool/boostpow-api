@@ -68,8 +68,8 @@ export class BoostBlockchainMonitor {
 
     private static isBoostJob(rawtx) {
         try {
-            const boostJob = boost.BoostPowJob.fromRawTransaction(rawtx);
-            if (boostJob) {
+            const boostJobs = boost.BoostPowJob.fromTransactionGetAllOutputs(rawtx);
+            if (boostJobs && boostJobs.length) {
                 return true;
             }
         } catch (ex) {
