@@ -108,11 +108,10 @@ export class BoostBlockchainMonitor {
 
     private static async processTransaction(e: { h: string, raw: string }) {
 
-        if (!e.h) {
+        if (!e.raw) {
             console.log('processTransaction skipping...', e);
             return;
         }
-        console.log('processTransaction', e.h);
         if (BoostBlockchainMonitor.isBoostJob(e.raw)) {
             console.log('processTransaction boostJob', e.h);
             BoostBlockchainMonitor.saveBoostJob(e.raw);
