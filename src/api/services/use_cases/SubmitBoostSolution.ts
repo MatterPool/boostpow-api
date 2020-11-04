@@ -88,6 +88,7 @@ export class SubmitBoostSolution implements UseCase {
                     'content-type': 'application/json',
                     'checkstatus': true, // Set check status to force checking tx instead of blindly broadcasting if it's not needed
                 }});
+                response.data.payload = JSON.parse(response.data.payload);
                 if (response && response.data && response.data.payload && response.data.payload.returnResult === 'success') {
                     return true;
                 } else if (response && response.data.payload) {

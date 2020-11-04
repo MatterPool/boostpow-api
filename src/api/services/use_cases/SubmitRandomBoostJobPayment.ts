@@ -42,7 +42,7 @@ export class SubmitRandomBoostJobPayment implements UseCase {
                 'content-type': 'application/json',
                 'checkstatus': true, // Set check status to force checking tx instead of blindly broadcasting if it's not needed
             }});
-
+            response.data.payload = JSON.parse(response.data.payload);
             if (response && response.data  && response.data.payload && response.data.payload.returnResult === 'success') {
                 console.log('ensureTransactionBroadcasted true success', response);
                 return true;
@@ -53,13 +53,16 @@ export class SubmitRandomBoostJobPayment implements UseCase {
                 return true;
             } else {
                 console.log('ensureTransactionBroadcasted not true', response);
-                return false;
             }
         } catch (err) {
             console.log('ensureTransactionBroadcasted err', err);
-            // throw err;
-            return false;
         }
+        // Try one last time
+        if (await this.checkIfTransactionExists(tx.hash)) {
+            console.log('checkIfTransactionExists is true', tx.hash);
+            return true;
+        }
+        return false;
     }
 
     private async checkIfTransactionExists(txid: string) {
@@ -69,6 +72,7 @@ export class SubmitRandomBoostJobPayment implements UseCase {
                 'checkstatus': true, // Set check status to force checking tx instead of blindly broadcasting if it's not needed
             }});
 
+            response.data.payload = JSON.parse(response.data.payload);
             if (response && response.data &&  response.data.payload && response.data.payload.returnResult === 'success') {
                 console.log('checkIfTransactionExists TRUE SUCCESS', txid, response);
                 return true;
