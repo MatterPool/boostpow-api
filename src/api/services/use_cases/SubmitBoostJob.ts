@@ -47,14 +47,20 @@ export class SubmitBoostJob implements UseCase {
             await this.boostJobRepo.save(boostJobEntity);
         }
     }
-    public async run(params: {rawtx: string}): Promise<any> {
+    public async run(params: {rawtx: string, vout: number = 0}): Promise<any> {
         console.log('SubmitBoostJobRun', params);
         if (
             this.isEmpty(params.rawtx)
         ) {
             throw new ClientError(422, 'required fields: rawtx');
         }
-        const boostJob = boost.BoostPowJob.fromRawTransaction(params.rawtx);
+
+        const boostJob = boost.BoostPowJob.fromRawTransaction(params.rawtx, params.vout);
+
+        if (boostJob === undefined) {
+            throw new ClientError(422, 'failed to create boost job. check the vout parameter.');
+        }
+        
         console.log('SubmitBoostJobRun', boostJob);
         let boostJobEntity = await this.boostJobRepo.findOne({
             txid: boostJob.getTxid(),
