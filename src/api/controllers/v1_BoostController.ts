@@ -28,9 +28,10 @@ export class BoostController {
     @Post('/v1/main/boost/jobs')
     public async submitBoostJobPost(
         @BodyParam('rawtx') rawtx: string,
+        @BodyParam('vout') vout: number
     ) {
         return this.submitBoostJob.run({
-            rawtx
+            rawtx, vout
         }).then((outcome) => {
             return outcome;
         }).catch((e) => {
