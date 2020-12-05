@@ -47,7 +47,7 @@ export class SubmitBoostJob implements UseCase {
             await this.boostJobRepo.save(boostJobEntity);
         }
     }
-    public async run(params: {rawtx: string, vout: number = 0}): Promise<any> {
+    public async run(params: {rawtx: string, vout?: number}): Promise<any> {
         console.log('SubmitBoostJobRun', params);
         if (
             this.isEmpty(params.rawtx)
