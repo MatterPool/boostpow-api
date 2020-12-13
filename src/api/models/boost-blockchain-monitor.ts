@@ -4,6 +4,7 @@ import * as bitcoinfiles from 'bitcoinfiles-sdk';
 import * as boost from '@matterpool/boostpow-js';
 import { SubmitBoostJobProof } from '../services/use_cases/SubmitBoostJobProof';
 import { SubmitBoostJob } from '../services/use_cases/SubmitBoostJob';
+import * as bsv from 'bsv';
 
 export class BoostBlockchainMonitor {
     private blockchainScanner;
@@ -68,7 +69,8 @@ export class BoostBlockchainMonitor {
 
     private static isBoostJob(rawtx) {
         try {
-            const boostJobs = boost.BoostPowJob.fromTransactionGetAllOutputs(rawtx);
+            const tx = new bsv.Transaction(rawtx);
+            const boostJobs = boost.BoostPowJob.fromTransactionGetAllOutputs(tx);
             if (boostJobs && boostJobs.length) {
                 return true;
             }
