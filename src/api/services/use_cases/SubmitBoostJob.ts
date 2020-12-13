@@ -114,8 +114,9 @@ export class SubmitBoostJob implements UseCase {
                 console.log('Checking pow...');
                 // Check to see if the script hash is spent
                 const history = await matterInstance.getScriptHashHistory(boostJobEntity.scripthash, {});
+ 
                 for (const item of history.results) {
-                    console.log('Checking item...');
+                    console.log('Checking item...', item, item.txid);
                     const txraw = await matterInstance.getTxRaw(item.txid);
                     let boostProof;
                     try {

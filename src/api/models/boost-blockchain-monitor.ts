@@ -125,16 +125,9 @@ export class BoostBlockchainMonitor {
 
     private static async saveBoostJob(rawtx) {
         try {
-            const boostJobs = boost.BoostPowJob.fromTransactionGetAllOutputs(rawtx);
-            if (boostJobs && boostJobs.length) {
-                for (const boostJob of boostJobs) {
-                    console.log('Found BoostJob', boostJob);
-                    const submitBoostJob = Container.get(SubmitBoostJob);
-                    await submitBoostJob.run({ rawtx: rawtx})
-                }
-                return;
-            }
-            console.log('saveBoostJob null', rawtx);
+            const submitBoostJob = Container.get(SubmitBoostJob);
+            await submitBoostJob.run({ rawtx: rawtx})
+            console.log('saveBoostJob', rawtx);
             return;
         } catch (ex) {
             console.log(ex)
