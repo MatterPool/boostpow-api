@@ -35,7 +35,7 @@
   "dependencies": {
     "@matterpool/boostpow-js": "^1.2.31",
     "axios": "^0.21.0",
-    "bcrypt": "3.0.1",
+    "bcrypt": "5.0.0",
     "bitcoinfiles-sdk": "^2.4.10",
     "bs58": "^4.0.1",
     "bsv": "^1.2.0",
