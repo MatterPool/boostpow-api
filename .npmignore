@@ -4,3 +4,4 @@ test/
 .gitmodules
 .travis.yml
 Dockerfile
+.env

@@ -54,77 +54,91 @@ export class SubmitBoostJob implements UseCase {
         ) {
             throw new ClientError(422, 'required fields: rawtx');
         }
+        let boostJobs = [];
 
-        const boostJob = boost.BoostPowJob.fromRawTransaction(params.rawtx, params.vout);
-
-        if (boostJob === undefined) {
-            throw new ClientError(422, 'failed to create boost job. check the vout parameter.');
+        if (params.vout || params.vout === 0) {
+            boostJobs.push(boost.BoostPowJob.fromRawTransaction(params.rawtx, params.vout));
+        } else {
+            boostJobs = boost.BoostPowJob.fromTransactionGetAllOutputs(new bsv.Transaction(params.rawtx));
         }
-        
-        console.log('SubmitBoostJobRun', boostJob);
-        let boostJobEntity = await this.boostJobRepo.findOne({
-            txid: boostJob.getTxid(),
-            vout: boostJob.getVout(),
-        });
-        if (!boostJobEntity) {
-            const newBoostJob = new BoostJob();
-            newBoostJob.inserted_at = Math.round((new Date().getTime()) / 1000);
-            newBoostJob.txid = boostJob.getTxid();
-            newBoostJob.vout = boostJob.getVout();
-            newBoostJob.scripthash = boostJob.getScriptHash();
-            newBoostJob.rawtx = params.rawtx;
-            newBoostJob.value = boostJob.getValue();
-            newBoostJob.diff = boostJob.getDiff();
-            newBoostJob.content = boostJob.getContentHex();
-            newBoostJob.contentutf8 = boostJob.getContentString();
-            newBoostJob.category = boostJob.getCategoryHex();
-            newBoostJob.categoryutf8 = boostJob.getCategoryString();
-            newBoostJob.tag = boostJob.getTagHex();
-            newBoostJob.tagutf8 = boostJob.getTagString();
-            newBoostJob.additionaldata = boostJob.getAdditionalDataHex();
-            newBoostJob.additionaldatautf8 = boostJob.getAdditionalDataString();
-            newBoostJob.usernonce = boostJob.getUserNonceHex();
-            try {
-                console.log('Saving...', newBoostJob);
-                boostJobEntity = await this.boostJobRepo.save(newBoostJob);
-                console.log('Saved.', newBoostJob);
-            } catch (ex) {
-                boostJobEntity = await this.boostJobRepo.findOne({
-                    txid: boostJob.getTxid(),
-                    vout: boostJob.getVout(),
-                });
-                // If it still does not exist, then throw
-                if (!boostJobEntity) {
-                    throw new Error(ex);
-                }
+
+        if (!boostJobs.length) {
+            throw new ClientError(422, 'required at least one Boost POW output');
+        }
+        const boostJobEntities: BoostJob[] = [];
+        for (const boostJob of boostJobs) {
+            if (boostJob === undefined) {
+                throw new ClientError(422, 'failed to create boost job. check the vout parameter.');
             }
-        }
-        if (!boostJobEntity.powstring || !boostJobEntity.powmetadata || !boostJobEntity.boosthash) {
-            console.log('Checking pow...');
-            // Check to see if the script hash is spent
-            const history = await matterInstance.getScriptHashHistory(boostJobEntity.scripthash, {});
-            for (const item of history.results) {
-                console.log('Checking item...');
-                const txraw = await matterInstance.getTxRaw(item.txid);
-                let boostProof;
+            
+            console.log('SubmitBoostJobRun', boostJob);
+            let boostJobEntity = await this.boostJobRepo.findOne({
+                txid: boostJob.getTxid(),
+                vout: boostJob.getVout(),
+            });
+            if (!boostJobEntity) {
+                const newBoostJob = new BoostJob();
+                newBoostJob.inserted_at = Math.round((new Date().getTime()) / 1000);
+                newBoostJob.txid = boostJob.getTxid();
+                newBoostJob.vout = boostJob.getVout();
+                newBoostJob.scripthash = boostJob.getScriptHash();
+                newBoostJob.rawtx = params.rawtx;
+                newBoostJob.value = boostJob.getValue();
+                newBoostJob.diff = boostJob.getDiff();
+                newBoostJob.content = boostJob.getContentHex();
+                newBoostJob.contentutf8 = boostJob.getContentString();
+                newBoostJob.category = boostJob.getCategoryHex();
+                newBoostJob.categoryutf8 = boostJob.getCategoryString();
+                newBoostJob.tag = boostJob.getTagHex();
+                newBoostJob.tagutf8 = boostJob.getTagString();
+                newBoostJob.additionaldata = boostJob.getAdditionalDataHex();
+                newBoostJob.additionaldatautf8 = boostJob.getAdditionalDataString();
+                newBoostJob.usernonce = boostJob.getUserNonceHex();
                 try {
-                    boostProof = boost.BoostPowJobProof.fromRawTransaction(txraw);
+                    console.log('Saving...', newBoostJob);
+                    boostJobEntity = await this.boostJobRepo.save(newBoostJob);
+                    console.log('Saved.', newBoostJob);
                 } catch (ex) {
-                    // Not a valid output
-                    console.log('Error loading from transaction', ex, txraw);
-                    continue;
+                    boostJobEntity = await this.boostJobRepo.findOne({
+                        txid: boostJob.getTxid(),
+                        vout: boostJob.getVout(),
+                    });
+                    // If it still does not exist, then throw
+                    if (!boostJobEntity) {
+                        throw new Error(ex);
+                    }
                 }
-                if (boostProof && boostProof.getSpentTxid() === boostJobEntity.txid && boostProof.getSpentVout() === boostJobEntity.vout) {
-                    const validation = boost.BoostPowJob.tryValidateJobProof(boostJob, boostProof);
-                    if (!validation || !validation.boostPowString) {
-                        console.log('Unable to validate...', validation);
+  
+            }
+            if (!boostJobEntity.powstring || !boostJobEntity.powmetadata || !boostJobEntity.boosthash) {
+                console.log('Checking pow...');
+                // Check to see if the script hash is spent
+                const history = await matterInstance.getScriptHashHistory(boostJobEntity.scripthash, {});
+                for (const item of history.results) {
+                    console.log('Checking item...');
+                    const txraw = await matterInstance.getTxRaw(item.txid);
+                    let boostProof;
+                    try {
+                        boostProof = boost.BoostPowJobProof.fromRawTransaction(txraw);
+                    } catch (ex) {
+                        // Not a valid output
+                        console.log('Error loading from transaction', ex, txraw);
                         continue;
                     }
-                    console.log('Saving spent info', boostJobEntity, boostProof);
-                    await this.saveSpentInfo(boostJobEntity, boostProof, validation.boostPowString.time(), txraw);
-                    break;
+                    if (boostProof && boostProof.getSpentTxid() === boostJobEntity.txid && boostProof.getSpentVout() === boostJobEntity.vout) {
+                        const validation = boost.BoostPowJob.tryValidateJobProof(boostJob, boostProof);
+                        if (!validation || !validation.boostPowString) {
+                            console.log('Unable to validate...', validation);
+                            continue;
+                        }
+                        console.log('Saving spent info', boostJobEntity, boostProof);
+                        await this.saveSpentInfo(boostJobEntity, boostProof, validation.boostPowString.time(), txraw);
+                        break;
+                    }
                 }
             }
+
+            boostJobEntities.push(boostJobEntity);
         }
         console.log('Updating filter');
         // New entity saved, update the filter for the blockchain scanner
@@ -136,7 +150,7 @@ export class SubmitBoostJob implements UseCase {
         });
         return {
             success: true,
-            result: BoostJobStatus.validateAndSerialize(boostJobEntity, true)
+            result: boostJobEntities.map((e) => { return BoostJobStatus.validateAndSerialize(e, true) })
         };
     }
 }
