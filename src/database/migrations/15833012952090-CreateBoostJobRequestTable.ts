@@ -265,12 +265,6 @@ export class CreateBoostJobTable1583012952090 implements MigrationInterface {
         }));
 
         await queryRunner.createIndex(table, new TableIndex({
-            name: "idx_boost_job_tagutf8",
-            columnNames: ["tagutf8"],
-            isUnique: false
-        }));
-
-        await queryRunner.createIndex(table, new TableIndex({
             name: "idx_boost_job_time",
             columnNames: ["time"],
             isUnique: false
